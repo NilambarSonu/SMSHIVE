@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  # ── MongoDB ──────────────────────────────────
+  mongodb:
+    image: mongo:7
+    container_name: smshive-mongo
+    restart: unless-stopped
+    ports:
+      - '27017:27017'
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-smshive_secret}
+      MONGO_INITDB_DATABASE: smshive
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - smshive-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh --quiet
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # ── NestJS API ───────────────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: smshive-api
+    restart: unless-stopped
+    ports:
+      - '${API_PORT:-8000}:8000'
+    environment:
+      NODE_ENV: production
+      API_PORT: 8000
+      MONGODB_URI: mongodb://${MONGO_ROOT_USER:-admin}:${MONGO_ROOT_PASSWORD:-smshive_secret}@mongodb:27017/smshive?authSource=admin
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-15m}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-your-super-secret-refresh-key-change-in-production}
+      JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION:-7d}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - smshive-network
+
+  # ── Next.js Web Dashboard ────────────────────
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: smshive-web
+    restart: unless-stopped
+    ports:
+      - '${WEB_PORT:-3000}:3000'
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000/api}
+    depends_on:
+      - api
+    networks:
+      - smshive-network
+
+volumes:
+  mongo_data:
+    driver: local
+
+networks:
+  smshive-network:
+    driver: bridge
