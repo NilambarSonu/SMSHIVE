@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { ThemeProvider } from '@/components/shared/ThemeProvider';
 import { Toaster } from 'sonner';
-import { ClerkProvider, SignInButton, SignUpButton, Show, UserButton } from "@clerk/nextjs";
 
 export const metadata: Metadata = {
   title: 'SMSHIVE — Free SMS Gateway',
@@ -27,18 +26,8 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
       </head>
       <body className="min-h-screen bg-background font-sans antialiased">
-        <ClerkProvider>
-          <header className="fixed top-0 right-0 p-4 z-50 flex gap-4">
-            <Show when="signed-out">
-              <SignInButton />
-              <SignUpButton />
-            </Show>
-            <Show when="signed-in">
-              <UserButton />
-            </Show>
-          </header>
-          <ThemeProvider>
-            {children}
+        <ThemeProvider>
+          {children}
           <Toaster
             theme="dark"
             position="bottom-right"
@@ -51,7 +40,6 @@ export default function RootLayout({
             }}
           />
         </ThemeProvider>
-        </ClerkProvider>
       </body>
     </html>
   );

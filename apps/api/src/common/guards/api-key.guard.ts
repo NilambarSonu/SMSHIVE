@@ -26,7 +26,7 @@ export class ApiKeyGuard implements CanActivate {
     // The actual key validation is handled by middleware or
     // can be enhanced to inject ApiKeysService when the module is available.
     // For now, we attach the raw key to the request for downstream validation.
-    (request as Record<string, unknown>)['apiKey'] = apiKey;
+    (request as any)['apiKey'] = apiKey;
 
     this.logger.debug(`API key authentication attempted with prefix: ${apiKey.substring(0, 8)}...`);
 

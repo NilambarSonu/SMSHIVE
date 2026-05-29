@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types, FilterQuery } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Sms, SmsDocument } from './schemas/sms.schema.js';
 
 @Injectable()
@@ -59,7 +59,7 @@ export class SmsService {
     const { page = 1, limit = 20, status, type, deviceId } = query;
     const skip = (page - 1) * limit;
 
-    const filter: FilterQuery<Sms> = {
+    const filter: any = {
       userId: new Types.ObjectId(userId),
     };
 

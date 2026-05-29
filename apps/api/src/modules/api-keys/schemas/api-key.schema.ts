@@ -6,7 +6,7 @@ export type ApiKeyDocument = HydratedDocument<ApiKey>;
 @Schema({
   timestamps: true,
   toJSON: {
-    transform(_doc, ret) {
+    transform(_doc, ret: any) {
       delete ret.__v;
       delete ret.keyHash;
       return ret;

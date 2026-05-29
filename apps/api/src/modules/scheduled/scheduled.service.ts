@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types, FilterQuery } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Scheduled, ScheduledDocument } from './schemas/scheduled.schema.js';
 import { CreateScheduledDto } from './dto/create-scheduled.dto.js';
 import { UpdateScheduledDto } from './dto/update-scheduled.dto.js';
@@ -29,7 +29,7 @@ export class ScheduledService {
     userId: string,
     query?: { status?: string },
   ): Promise<ScheduledDocument[]> {
-    const filter: FilterQuery<Scheduled> = {
+    const filter: any = {
       userId: new Types.ObjectId(userId),
     };
     if (query?.status) {

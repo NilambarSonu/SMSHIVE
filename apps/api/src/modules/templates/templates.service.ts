@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types, FilterQuery } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Template, TemplateDocument } from './schemas/template.schema.js';
 import { CreateTemplateDto } from './dto/create-template.dto.js';
 import { UpdateTemplateDto } from './dto/update-template.dto.js';
@@ -26,7 +26,7 @@ export class TemplatesService {
     userId: string,
     query?: { category?: string },
   ): Promise<TemplateDocument[]> {
-    const filter: FilterQuery<Template> = {
+    const filter: any = {
       userId: new Types.ObjectId(userId),
     };
     if (query?.category) {

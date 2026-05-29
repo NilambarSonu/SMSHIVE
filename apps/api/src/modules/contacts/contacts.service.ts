@@ -5,7 +5,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types, FilterQuery } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Contact, ContactDocument } from './schemas/contact.schema.js';
 import { CreateContactDto } from './dto/create-contact.dto.js';
 import { UpdateContactDto } from './dto/update-contact.dto.js';
@@ -47,7 +47,7 @@ export class ContactsService {
     userId: string,
     query?: { label?: string; search?: string },
   ): Promise<ContactDocument[]> {
-    const filter: FilterQuery<Contact> = {
+    const filter: any = {
       userId: new Types.ObjectId(userId),
     };
 

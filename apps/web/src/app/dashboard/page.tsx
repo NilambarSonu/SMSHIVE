@@ -1,8 +1,10 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { StatsCard } from '@/components/shared/StatsCard';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { getRelativeTime, truncateMessage, formatNumber } from '@/lib/utils';
+import { api } from '@/lib/api';
 import {
   Send,
   CheckCircle2,
@@ -10,88 +12,179 @@ import {
   Clock,
   Smartphone,
   CalendarDays,
-  ArrowUpRight,
   Activity,
   Zap,
+  Loader2,
 } from 'lucide-react';
 import Link from 'next/link';
+import { toast } from 'sonner';
 
-// Mock data for initial UI (will be replaced with API calls)
-const mockStats = {
-  sentToday: 1247,
-  delivered: 1189,
-  failed: 23,
-  pending: 35,
-  activeDevices: 4,
-  thisMonth: 28451,
-  sentTodayChange: 12.5,
-  deliveredChange: 8.3,
-  failedChange: -15.2,
-  activeDevicesChange: 0,
-};
+interface SmsLog {
+  _id: string;
+  recipients: string[];
+  message: string;
+  status: string;
+  type: string;
+  deviceId?: string;
+  createdAt: string;
+  sender?: string;
+}
 
-const mockRecentMessages = [
-  { id: '1', to: '+91 98765 43210', message: 'Your OTP is 482910. Valid for 5 minutes.', status: 'delivered', device: 'Pixel 8 Pro', time: new Date(Date.now() - 30000).toISOString() },
-  { id: '2', to: '+91 87654 32109', message: 'Your order #ORD-4829 has been shipped! Track at...', status: 'sent', device: 'Galaxy S24', time: new Date(Date.now() - 120000).toISOString() },
-  { id: '3', to: '+91 76543 21098', message: 'Reminder: Your appointment is tomorrow at 10:00 AM', status: 'pending', device: 'OnePlus 12', time: new Date(Date.now() - 180000).toISOString() },
-  { id: '4', to: '+91 65432 10987', message: 'Payment of ₹2,500 received. Balance: ₹15,230', status: 'delivered', device: 'Pixel 8 Pro', time: new Date(Date.now() - 300000).toISOString() },
-  { id: '5', to: '+91 54321 09876', message: 'Welcome to SMSHIVE! Your account is ready.', status: 'failed', device: 'Galaxy S24', time: new Date(Date.now() - 600000).toISOString() },
-];
-
-const mockDevices = [
-  { id: '1', name: 'Pixel 8 Pro', status: 'online', battery: 85, sim: 'Jio', messagesSent: 8420, lastSeen: new Date().toISOString() },
-  { id: '2', name: 'Galaxy S24', status: 'online', battery: 62, sim: 'Airtel', messagesSent: 12350, lastSeen: new Date().toISOString() },
-  { id: '3', name: 'OnePlus 12', status: 'online', battery: 94, sim: 'VI', messagesSent: 5200, lastSeen: new Date().toISOString() },
-  { id: '4', name: 'Redmi Note 13', status: 'offline', battery: 15, sim: 'BSNL', messagesSent: 2481, lastSeen: new Date(Date.now() - 3600000).toISOString() },
-];
+interface Device {
+  _id: string;
+  deviceId: string;
+  name: string;
+  status: string;
+  batteryLevel?: number;
+  activeSims: { slot: number; carrier: string; phoneNumber: string; active: boolean }[];
+  messagesSent: number;
+}
 
 export default function DashboardOverview() {
+  const [stats, setStats] = useState({
+    sentToday: 0,
+    delivered: 0,
+    failed: 0,
+    pending: 0,
+    activeDevices: 0,
+    thisMonth: 0,
+  });
+  const [devices, setDevices] = useState<Device[]>([]);
+  const [recentMessages, setRecentMessages] = useState<SmsLog[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Quick Send State
+  const [quickPhone, setQuickPhone] = useState('');
+  const [quickMessage, setQuickMessage] = useState('');
+  const [sending, setSending] = useState(false);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const [statsRes, devicesRes, smsRes] = await Promise.all([
+          api.get<{ totalSent: number; totalDelivered: number; totalFailed: number; totalPending: number; totalReceived: number }>('/api/v1/sms/stats').catch(() => null),
+          api.get<{ data: Device[] }>('/api/v1/devices').catch(() => null),
+          api.get<{ data: SmsLog[] }>('/api/v1/sms', { params: { limit: 5 } }).catch(() => null),
+        ]);
+
+        if (statsRes) {
+          setStats({
+            sentToday: statsRes.totalSent,
+            delivered: statsRes.totalDelivered,
+            failed: statsRes.totalFailed,
+            pending: statsRes.totalPending,
+            activeDevices: devicesRes?.data.filter(d => d.status === 'online').length || 0,
+            thisMonth: statsRes.totalSent + statsRes.totalDelivered + statsRes.totalFailed,
+          });
+        }
+
+        if (devicesRes?.data) {
+          setDevices(devicesRes.data);
+        }
+
+        if (smsRes?.data) {
+          setRecentMessages(smsRes.data);
+        }
+      } catch (err) {
+        console.error('Failed to load dashboard data:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchData();
+    const interval = setInterval(fetchData, 10000); // refresh every 10s
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleQuickSend = async () => {
+    if (!quickPhone || !quickMessage) {
+      toast.error('Please enter both a phone number and message.');
+      return;
+    }
+
+    const onlineDevices = devices.filter(d => d.status === 'online');
+    if (onlineDevices.length === 0) {
+      toast.error('No online devices available to send SMS. Please connect your Android device.');
+      return;
+    }
+
+    setSending(true);
+    try {
+      const selectedDevice = onlineDevices[0]; // Round-robin fallback: just use first active device
+      await api.post(`/api/v1/gateway/devices/${selectedDevice.deviceId}/send-sms`, {
+        recipients: [quickPhone.trim()],
+        message: quickMessage.trim(),
+      });
+      toast.success('SMS queued successfully!');
+      setQuickPhone('');
+      setQuickMessage('');
+      
+      // Instantly refresh recent logs
+      const smsRes = await api.get<{ data: SmsLog[] }>('/api/v1/sms', { params: { limit: 5 } }).catch(() => null);
+      if (smsRes?.data) setRecentMessages(smsRes.data);
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to send SMS.');
+    } finally {
+      setSending(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="space-y-8 animate-pulse">
+        <div className="h-10 w-48 rounded bg-muted" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="h-28 rounded-xl bg-card border border-border" />
+          ))}
+        </div>
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          <div className="xl:col-span-2 h-96 rounded-xl bg-card border border-border" />
+          <div className="h-96 rounded-xl bg-card border border-border" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
       {/* Page Header */}
       <div>
-        <h1 className="text-2xl font-display font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground mt-1">Welcome back! Here&apos;s your gateway at a glance.</p>
+        <h1 className="text-2xl font-display font-bold tracking-tight">Dashboard Overview</h1>
+        <p className="text-muted-foreground mt-1">Here&apos;s your live gateway at a glance.</p>
       </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 stagger-children">
         <StatsCard
           title="Sent Today"
-          value={mockStats.sentToday}
-          change={mockStats.sentTodayChange}
-          changeLabel="vs yesterday"
+          value={stats.sentToday}
           icon={<Send size={18} />}
         />
         <StatsCard
           title="Delivered"
-          value={mockStats.delivered}
-          change={mockStats.deliveredChange}
-          changeLabel="delivery rate"
+          value={stats.delivered}
           icon={<CheckCircle2 size={18} />}
         />
         <StatsCard
           title="Failed"
-          value={mockStats.failed}
-          change={mockStats.failedChange}
-          changeLabel="vs yesterday"
+          value={stats.failed}
           icon={<XCircle size={18} />}
         />
         <StatsCard
           title="Pending"
-          value={mockStats.pending}
+          value={stats.pending}
           icon={<Clock size={18} />}
         />
         <StatsCard
           title="Active Devices"
-          value={mockStats.activeDevices}
+          value={stats.activeDevices}
           icon={<Smartphone size={18} />}
         />
         <StatsCard
-          title="This Month"
-          value={formatNumber(mockStats.thisMonth)}
-          change={22.1}
-          changeLabel="vs last month"
+          title="Total Processed"
+          value={formatNumber(stats.thisMonth)}
           icon={<CalendarDays size={18} />}
         />
       </div>
@@ -111,37 +204,44 @@ export default function DashboardOverview() {
               href="/dashboard/logs"
               className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors"
             >
-              View all <ArrowUpRight size={12} />
+              View all
             </Link>
           </div>
-          <div className="divide-y divide-border">
-            {mockRecentMessages.map((msg, index) => (
-              <div
-                key={msg.id}
-                className="flex items-center gap-4 px-5 py-3.5 hover:bg-muted/30 transition-colors"
-                style={{ animationDelay: `${index * 50}ms` }}
-              >
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  <Send size={14} />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium font-mono">{msg.to}</span>
-                    <StatusBadge status={msg.status} size="sm" />
+          {recentMessages.length === 0 ? (
+            <div className="flex flex-col items-center justify-center p-12 text-muted-foreground text-sm">
+              <p>No messages sent yet.</p>
+            </div>
+          ) : (
+            <div className="divide-y divide-border">
+              {recentMessages.map((msg) => (
+                <div
+                  key={msg._id}
+                  className="flex items-center gap-4 px-5 py-3.5 hover:bg-muted/30 transition-colors"
+                >
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    <Send size={14} />
                   </div>
-                  <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                    {truncateMessage(msg.message, 60)}
-                  </p>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium font-mono">
+                        {msg.type === 'incoming' ? msg.sender : msg.recipients.join(', ')}
+                      </span>
+                      <StatusBadge status={msg.status} size="sm" />
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                      {truncateMessage(msg.message, 60)}
+                    </p>
+                  </div>
+                  <div className="hidden sm:block text-right shrink-0">
+                    <p className="text-xs text-muted-foreground">SIM {msg.type === 'incoming' ? 'Received' : 'Outgoing'}</p>
+                    <p className="text-[11px] text-muted-foreground/60 mt-0.5">
+                      {getRelativeTime(msg.createdAt)}
+                    </p>
+                  </div>
                 </div>
-                <div className="hidden sm:block text-right shrink-0">
-                  <p className="text-xs text-muted-foreground">{msg.device}</p>
-                  <p className="text-[11px] text-muted-foreground/60 mt-0.5">
-                    {getRelativeTime(msg.time)}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Device Status Panel — 1/3 width */}
@@ -149,50 +249,57 @@ export default function DashboardOverview() {
           <div className="flex items-center justify-between p-5 border-b border-border">
             <div className="flex items-center gap-2">
               <Smartphone size={18} className="text-primary" />
-              <h2 className="text-base font-semibold">Devices</h2>
+              <h2 className="text-base font-semibold">Active Devices</h2>
             </div>
             <Link
               href="/dashboard/devices"
               className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors"
             >
-              Manage <ArrowUpRight size={12} />
+              Manage
             </Link>
           </div>
-          <div className="divide-y divide-border">
-            {mockDevices.map((device) => (
-              <div key={device.id} className="p-4 hover:bg-muted/30 transition-colors">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <div className={device.status === 'online' ? 'status-online' : 'status-offline'} />
-                    <span className="text-sm font-medium">{device.name}</span>
+          {devices.length === 0 ? (
+            <div className="flex flex-col items-center justify-center p-12 text-muted-foreground text-sm">
+              <p>No devices connected.</p>
+              <Link href="/dashboard/devices" className="text-primary text-xs mt-2 underline">Add one now</Link>
+            </div>
+          ) : (
+            <div className="divide-y divide-border">
+              {devices.map((device) => (
+                <div key={device._id} className="p-4 hover:bg-muted/30 transition-colors">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <div className={device.status === 'online' ? 'status-online' : 'status-offline'} />
+                      <span className="text-sm font-medium">{device.name}</span>
+                    </div>
+                    <StatusBadge status={device.status} showDot={false} />
                   </div>
-                  <StatusBadge status={device.status} showDot={false} />
-                </div>
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <div className="flex items-center gap-3">
-                    <span className="flex items-center gap-1">
-                      🔋 {device.battery}%
-                    </span>
-                    <span>{device.sim}</span>
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <div className="flex items-center gap-3">
+                      <span className="flex items-center gap-1">
+                        🔋 {device.batteryLevel ?? 100}%
+                      </span>
+                      <span>{device.activeSims[0]?.carrier || 'No SIM'}</span>
+                    </div>
+                    <span>{formatNumber(device.messagesSent)} sent</span>
                   </div>
-                  <span>{formatNumber(device.messagesSent)} sent</span>
+                  {/* Battery bar */}
+                  <div className="mt-2 h-1 w-full rounded-full bg-muted overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-500 ${
+                        (device.batteryLevel ?? 100) > 50
+                          ? 'bg-success'
+                          : (device.batteryLevel ?? 100) > 20
+                          ? 'bg-warning'
+                          : 'bg-destructive'
+                      }`}
+                      style={{ width: `${device.batteryLevel ?? 100}%` }}
+                    />
+                  </div>
                 </div>
-                {/* Battery bar */}
-                <div className="mt-2 h-1 w-full rounded-full bg-muted overflow-hidden">
-                  <div
-                    className={`h-full rounded-full transition-all duration-500 ${
-                      device.battery > 50
-                        ? 'bg-success'
-                        : device.battery > 20
-                        ? 'bg-warning'
-                        : 'bg-destructive'
-                    }`}
-                    style={{ width: `${device.battery}%` }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -205,16 +312,24 @@ export default function DashboardOverview() {
         <div className="flex flex-col sm:flex-row gap-3">
           <input
             type="tel"
-            placeholder="Phone number (e.g. +91 98765 43210)"
+            value={quickPhone}
+            onChange={(e) => setQuickPhone(e.target.value)}
+            placeholder="Phone number (e.g. +919876543210)"
             className="flex-1 rounded-lg border border-border bg-muted/30 px-4 py-2.5 text-sm outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-muted-foreground/50"
           />
           <input
             type="text"
+            value={quickMessage}
+            onChange={(e) => setQuickMessage(e.target.value)}
             placeholder="Type your message..."
             className="flex-[2] rounded-lg border border-border bg-muted/30 px-4 py-2.5 text-sm outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-muted-foreground/50"
           />
-          <button className="flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-[#6C63FF] to-[#5B54E8] px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:scale-[1.02] active:scale-[0.98] transition-all whitespace-nowrap">
-            <Send size={16} />
+          <button 
+            onClick={handleQuickSend}
+            disabled={sending}
+            className="flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-[#6C63FF] to-[#5B54E8] px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:scale-[1.02] active:scale-[0.98] transition-all whitespace-nowrap disabled:opacity-50"
+          >
+            {sending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
             Send
           </button>
         </div>

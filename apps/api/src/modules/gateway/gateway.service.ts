@@ -55,16 +55,12 @@ export class GatewayService {
     );
 
     const successful = results
-      .filter(
-        (r): r is PromiseFulfilledResult<unknown> => r.status === 'fulfilled',
-      )
-      .map((r) => r.value);
+      .filter((r) => r.status === 'fulfilled')
+      .map((r: any) => r.value);
 
     const failed = results
-      .filter(
-        (r): r is PromiseRejectedResult => r.status === 'rejected',
-      )
-      .map((r) => ({ error: r.reason?.message || 'Unknown error' }));
+      .filter((r) => r.status === 'rejected')
+      .map((r: any) => ({ error: r.reason?.message || 'Unknown error' }));
 
     return {
       total: messages.length,
