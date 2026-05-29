@@ -18,6 +18,15 @@ export default function DashboardLayout({
     fetchUser();
   }, [fetchUser]);
 
+  useEffect(() => {
+    // Redirect to login if not authenticated
+    // In development, we'll skip auth check for preview purposes
+    const isDev = process.env.NODE_ENV === 'development';
+    if (!isDev && !isAuthenticated && !isLoading) {
+      router.push('/login');
+    }
+  }, [isAuthenticated, isLoading, router]);
+
   // Show loading skeleton while checking auth
   if (isLoading) {
     return (
@@ -28,14 +37,6 @@ export default function DashboardLayout({
         </div>
       </div>
     );
-  }
-
-  // Redirect to login if not authenticated
-  // In development, we'll skip auth check for preview purposes
-  const isDev = process.env.NODE_ENV === 'development';
-  if (!isDev && !isAuthenticated) {
-    router.push('/login');
-    return null;
   }
 
   return (
