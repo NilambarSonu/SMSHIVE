@@ -10,6 +10,6 @@ import { DevicesController } from './devices.controller.js';
   ],
   controllers: [DevicesController],
   providers: [DevicesService],
-  exports: [DevicesService],
+  exports: [MongooseModule, DevicesService],
 })
 export class DevicesModule {}

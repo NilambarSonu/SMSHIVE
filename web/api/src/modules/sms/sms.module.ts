@@ -10,6 +10,6 @@ import { SmsController } from './sms.controller.js';
   ],
   controllers: [SmsController],
   providers: [SmsService],
-  exports: [SmsService],
+  exports: [MongooseModule, SmsService],
 })
 export class SmsModule {}
