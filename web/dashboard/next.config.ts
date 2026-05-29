@@ -9,6 +9,14 @@ const nextConfig: NextConfig = {
     // Using process.cwd() ensures an absolute path in all environments
     root: path.resolve(process.cwd(), '../../'),
   },
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: 'http://localhost:8000/api/:path*',
+      },
+    ];
+  },
 };
 
 export default nextConfig;

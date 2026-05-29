@@ -14,8 +14,9 @@
     "build": "npm run build --workspaces --if-present",
     "build:web": "npm run build -w web/dashboard",
     "build:api": "npm run build -w web/api",
-    "start": "npm start -w web/api",
-    "start:prod": "npm run start:prod -w web/api",
+    "start": "concurrently \"npm run start:api\" \"npm run start:web\"",
+    "start:api": "npm run start:prod -w web/api",
+    "start:web": "npm run start -w web/dashboard",
     "lint": "npm run lint --workspaces --if-present",
     "clean": "rimraf node_modules web/*/node_modules app/*/node_modules"
   },
@@ -23,9 +24,12 @@
     "node": ">=20.0.0"
   },
   "optionalDependencies": {
-    "lightningcss-linux-x64-gnu": "1.32.0",
-    "lightningcss-linux-arm64-gnu": "1.32.0",
+    "@tailwindcss/oxide-linux-arm64-gnu": "4.3.0",
     "@tailwindcss/oxide-linux-x64-gnu": "4.3.0",
-    "@tailwindcss/oxide-linux-arm64-gnu": "4.3.0"
+    "lightningcss-linux-arm64-gnu": "1.32.0",
+    "lightningcss-linux-x64-gnu": "1.32.0"
+  },
+  "dependencies": {
+    "concurrently": "^9.2.1"
   }
 }
