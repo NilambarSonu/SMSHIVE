@@ -126,11 +126,11 @@ export default function LandingPage() {
             </a>
           </div>
           <div className="flex items-center gap-3">
-            <Link href="/login" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors hidden sm:block">
+            <Link href="/sign-in" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors hidden sm:block">
               Log in
             </Link>
             <Link
-              href="/register"
+              href="/sign-up"
               className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-[#6C63FF] to-[#5B54E8] px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:scale-[1.02] active:scale-[0.98] transition-all"
             >
               Get Started Free
@@ -171,7 +171,7 @@ export default function LandingPage() {
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16 animate-fade-in" style={{ animationDelay: '300ms' }}>
             <Link
-              href="/register"
+              href="/sign-up"
               className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#6C63FF] to-[#5B54E8] px-8 py-4 text-base font-bold text-white shadow-2xl shadow-primary/30 hover:shadow-primary/50 hover:scale-[1.03] active:scale-[0.98] transition-all"
             >
               Get Started Free <ArrowRight size={18} />
@@ -310,7 +310,7 @@ export default function LandingPage() {
                 Free forever, no credit card required.
               </p>
               <Link
-                href="/register"
+                href="/sign-up"
                 className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#6C63FF] to-[#5B54E8] px-8 py-4 text-base font-bold text-white shadow-2xl shadow-primary/30 hover:shadow-primary/50 hover:scale-[1.03] active:scale-[0.98] transition-all"
               >
                 Get Started Free <ArrowRight size={18} />

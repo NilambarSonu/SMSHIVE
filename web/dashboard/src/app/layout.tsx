@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { ThemeProvider } from '@/components/shared/ThemeProvider';
 import { Toaster } from 'sonner';
+import { ClerkProvider } from '@clerk/nextjs';
+import { dark } from '@clerk/themes';
 
 export const metadata: Metadata = {
   title: 'SMSHIVE — Free SMS Gateway',
@@ -21,26 +23,67 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-      </head>
-      <body className="min-h-screen bg-background font-sans antialiased">
-        <ThemeProvider>
-          {children}
-          <Toaster
-            theme="dark"
-            position="bottom-right"
-            toastOptions={{
-              style: {
-                background: 'hsl(var(--card))',
-                border: '1px solid hsl(var(--border))',
-                color: 'hsl(var(--foreground))',
-              },
-            }}
-          />
-        </ThemeProvider>
-      </body>
-    </html>
+    <ClerkProvider
+      appearance={{
+        baseTheme: dark,
+        variables: {
+          colorPrimary: '#6C63FF',
+          colorTextOnPrimaryBackground: '#FFFFFF',
+          colorBackground: '#0A0A0F',
+          colorInputBackground: '#111118',
+          colorInputText: '#F0F0FF',
+          colorText: '#F0F0FF',
+          colorTextSecondary: '#6B7280',
+          colorDanger: '#EF4444',
+          colorSuccess: '#00D4AA',
+          borderRadius: '0.75rem',
+          fontFamily: "'DM Sans', ui-sans-serif, system-ui, sans-serif",
+        },
+        elements: {
+          // Hide social login buttons (Email + Password only for MVP)
+          socialButtonsBlockButton: { display: 'none' },
+          socialButtonsBlockButtonText: { display: 'none' },
+          socialButtonsProviderIcon: { display: 'none' },
+          dividerRow: { display: 'none' },
+          dividerText: { display: 'none' },
+          dividerLine: { display: 'none' },
+          // Card styling
+          card: {
+            backgroundColor: 'hsl(240 18% 8% / 0.6)',
+            backdropFilter: 'blur(16px)',
+            border: '1px solid hsl(240 14% 15% / 0.5)',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+          },
+          // Footer branding
+          footerAction: {
+            '& a': {
+              color: '#6C63FF',
+            },
+          },
+        },
+      }}
+    >
+      <html lang="en" suppressHydrationWarning>
+        <head>
+          <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        </head>
+        <body className="min-h-screen bg-background font-sans antialiased">
+          <ThemeProvider>
+            {children}
+            <Toaster
+              theme="dark"
+              position="bottom-right"
+              toastOptions={{
+                style: {
+                  background: 'hsl(var(--card))',
+                  border: '1px solid hsl(var(--border))',
+                  color: 'hsl(var(--foreground))',
+                },
+              }}
+            />
+          </ThemeProvider>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

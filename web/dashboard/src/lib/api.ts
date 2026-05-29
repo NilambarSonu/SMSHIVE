@@ -1,5 +1,5 @@
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// SMSHIVE — API Client
+// SMSHIVE — API Client (Clerk-powered)
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -8,16 +8,33 @@ interface ApiOptions extends RequestInit {
   params?: Record<string, string | number | boolean | undefined>;
 }
 
+type GetTokenFn = () => Promise<string | null>;
+
 class ApiClient {
   private baseUrl: string;
+  private getTokenFn: GetTokenFn | null = null;
 
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl;
   }
 
-  private getToken(): string | null {
-    if (typeof window === 'undefined') return null;
-    return localStorage.getItem('smshive_access_token');
+  /**
+   * Set the Clerk token getter function.
+   * Called from React components via useAuth().getToken
+   */
+  setTokenGetter(fn: GetTokenFn) {
+    this.getTokenFn = fn;
+  }
+
+  private async getToken(): Promise<string | null> {
+    if (this.getTokenFn) {
+      try {
+        return await this.getTokenFn();
+      } catch {
+        return null;
+      }
+    }
+    return null;
   }
 
   private buildUrl(path: string, params?: Record<string, string | number | boolean | undefined>): string {
@@ -35,7 +52,7 @@ class ApiClient {
   async request<T>(path: string, options: ApiOptions = {}): Promise<T> {
     const { params, ...fetchOptions } = options;
     const url = this.buildUrl(path, params);
-    const token = this.getToken();
+    const token = await this.getToken();
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -52,23 +69,12 @@ class ApiClient {
     });
 
     if (response.status === 401) {
-      // Try refresh token
-      const refreshed = await this.refreshToken();
-      if (refreshed) {
-        headers['Authorization'] = `Bearer ${this.getToken()}`;
-        const retryResponse = await fetch(url, { ...fetchOptions, headers });
-        if (!retryResponse.ok) {
-          throw new ApiError(retryResponse.status, await retryResponse.text());
-        }
-        return retryResponse.json();
-      }
-      // Redirect to login
+      // Clerk handles session refresh automatically.
+      // If we still get 401, the session is truly expired.
       if (typeof window !== 'undefined') {
-        localStorage.removeItem('smshive_access_token');
-        localStorage.removeItem('smshive_refresh_token');
-        window.location.href = '/login';
+        window.location.href = '/sign-in';
       }
-      throw new ApiError(401, 'Unauthorized');
+      throw new ApiError(401, 'Session expired. Please sign in again.');
     }
 
     if (!response.ok) {
@@ -77,36 +83,6 @@ class ApiClient {
     }
 
     return response.json();
-  }
-
-  private async refreshToken(): Promise<boolean> {
-    const refreshToken = typeof window !== 'undefined'
-      ? localStorage.getItem('smshive_refresh_token')
-      : null;
-
-    if (!refreshToken) return false;
-
-    try {
-      const response = await fetch(`${this.baseUrl}/api/auth/refresh-token`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken }),
-      });
-
-      if (!response.ok) return false;
-
-      const data = await response.json();
-      if (data.data?.accessToken) {
-        localStorage.setItem('smshive_access_token', data.data.accessToken);
-        if (data.data.refreshToken) {
-          localStorage.setItem('smshive_refresh_token', data.data.refreshToken);
-        }
-        return true;
-      }
-      return false;
-    } catch {
-      return false;
-    }
   }
 
   get<T>(path: string, options?: ApiOptions) {

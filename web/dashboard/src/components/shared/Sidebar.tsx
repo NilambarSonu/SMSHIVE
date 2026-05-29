@@ -22,6 +22,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Zap,
+  UserCircle,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -42,6 +43,7 @@ const NAV_ITEMS = [
   { label: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
   { label: 'Logs', href: '/dashboard/logs', icon: ScrollText },
   { type: 'separator' as const, label: 'Account' },
+  { label: 'Profile', href: '/dashboard/user-profile', icon: UserCircle },
   { label: 'Team', href: '/dashboard/team', icon: UsersRound },
   { label: 'Settings', href: '/dashboard/settings', icon: Settings },
 ] as const;

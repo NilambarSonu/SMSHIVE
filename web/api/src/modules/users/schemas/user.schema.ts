@@ -68,7 +68,10 @@ export class User {
   })
   email: string;
 
-  @Prop({ required: true, select: false })
+  @Prop({ unique: true, sparse: true, index: true })
+  clerkId?: string;
+
+  @Prop({ select: false })
   passwordHash: string;
 
   @Prop({ required: true, trim: true })

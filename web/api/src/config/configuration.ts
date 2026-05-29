@@ -18,6 +18,10 @@ export default () => ({
     clientId: process.env.GOOGLE_CLIENT_ID || '',
     clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
   },
+  clerk: {
+    secretKey: process.env.CLERK_SECRET_KEY || '',
+    publishableKey: process.env.CLERK_PUBLISHABLE_KEY || '',
+  },
   server: {
     port: parseInt(process.env.API_PORT || '8000', 10),
     corsOrigins: process.env.CORS_ORIGINS || 'http://localhost:3000',

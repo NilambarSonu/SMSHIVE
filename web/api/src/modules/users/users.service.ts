@@ -59,4 +59,30 @@ export class UsersService {
     }
     return user;
   }
+
+  async findByClerkId(clerkId: string): Promise<UserDocument | null> {
+    return this.userModel.findOne({ clerkId }).exec();
+  }
+
+  async findOrCreateByClerk(clerkId: string, email: string, name: string): Promise<UserDocument> {
+    let user = await this.findByClerkId(clerkId);
+    if (user) return user;
+
+    // Check if a user with this email already exists (legacy user)
+    user = await this.userModel.findOne({ email: email.toLowerCase() }).exec();
+    if (user) {
+      // Link the existing user to Clerk
+      user.clerkId = clerkId;
+      return user.save();
+    }
+
+    // Create new user
+    const newUser = new this.userModel({
+      email: email.toLowerCase(),
+      name: name || email.split('@')[0],
+      clerkId,
+      passwordHash: 'clerk-managed', // placeholder, not used
+    });
+    return newUser.save();
+  }
 }

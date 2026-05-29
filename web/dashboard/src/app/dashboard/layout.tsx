@@ -2,42 +2,21 @@
 
 import { Sidebar } from '@/components/shared/Sidebar';
 import { Header } from '@/components/shared/Header';
-import { useAuthStore } from '@/lib/auth';
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useApiAuth, useSyncUser } from '@/lib/auth';
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { isAuthenticated, isLoading, fetchUser } = useAuthStore();
-  const router = useRouter();
+  // Initialize Clerk token for API calls
+  useApiAuth();
 
-  useEffect(() => {
-    fetchUser();
-  }, [fetchUser]);
+  // Sync Clerk user with backend MongoDB
+  useSyncUser();
 
-  useEffect(() => {
-    // Redirect to login if not authenticated
-    // In development, we'll skip auth check for preview purposes
-    const isDev = process.env.NODE_ENV === 'development';
-    if (!isDev && !isAuthenticated && !isLoading) {
-      router.push('/login');
-    }
-  }, [isAuthenticated, isLoading, router]);
-
-  // Show loading skeleton while checking auth
-  if (isLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-4">
-          <div className="h-10 w-10 rounded-full border-2 border-primary border-t-transparent animate-spin" />
-          <p className="text-sm text-muted-foreground animate-pulse">Loading SMSHIVE...</p>
-        </div>
-      </div>
-    );
-  }
+  // Route protection is handled by Clerk middleware (src/middleware.ts)
+  // No manual auth checks needed here
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">

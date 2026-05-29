@@ -1,19 +1,6 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { PassportStrategy } from '@nestjs/passport';
-import { Strategy } from 'passport-local';
-import { AuthService } from '../auth.service.js';
+// This strategy is no longer used. Authentication is handled by Clerk via JwtAuthGuard.
+// Kept as a placeholder to avoid breaking imports during transition.
+import { Injectable } from '@nestjs/common';
 
 @Injectable()
-export class LocalStrategy extends PassportStrategy(Strategy) {
-  constructor(private authService: AuthService) {
-    super({ usernameField: 'email' });
-  }
-
-  async validate(email: string, password: string): Promise<unknown> {
-    const user = await this.authService.validateUser(email, password);
-    if (!user) {
-      throw new UnauthorizedException('Invalid email or password');
-    }
-    return user;
-  }
-}
+export class LocalStrategy {}
