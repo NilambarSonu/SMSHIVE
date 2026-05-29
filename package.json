@@ -15,7 +15,7 @@
     "build:web": "npm run build -w web/dashboard",
     "build:api": "npm run build -w web/api",
     "start": "concurrently \"npm run start:api\" \"npm run start:web\"",
-    "start:prod": "npm run start:prod -w web/api",
+    "start:prod": "concurrently -k \"node proxy.js\" \"npm run start:prod -w web/api\" \"npm start -w web/dashboard -- --port 3001\"",
     "start:api": "npm run start:prod -w web/api",
     "start:web": "npm run start -w web/dashboard",
     "lint": "npm run lint --workspaces --if-present",
@@ -31,6 +31,7 @@
     "lightningcss-linux-x64-gnu": "1.32.0"
   },
   "dependencies": {
-    "concurrently": "^9.2.1"
+    "concurrently": "^9.2.1",
+    "http-proxy": "^1.18.1"
   }
 }
