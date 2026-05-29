@@ -1,14 +1,25 @@
 import { cn } from '@/lib/utils';
+import React from 'react';
 
 interface EmptyStateProps {
-  icon: React.ReactNode;
+  icon: any; // Using any briefly to handle both Lucide component and ReactNode
   title: string;
   description: string;
   action?: React.ReactNode;
+  actionLabel?: string;
+  onAction?: () => void;
   className?: string;
 }
 
-export function EmptyState({ icon, title, description, action, className }: EmptyStateProps) {
+export function EmptyState({ 
+  icon: Icon, 
+  title, 
+  description, 
+  action, 
+  actionLabel, 
+  onAction, 
+  className 
+}: EmptyStateProps) {
   return (
     <div
       className={cn(
@@ -17,11 +28,19 @@ export function EmptyState({ icon, title, description, action, className }: Empt
       )}
     >
       <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-muted/50 text-muted-foreground mb-4">
-        {icon}
+        {typeof Icon === 'function' ? <Icon size={32} /> : Icon}
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-1">{title}</h3>
       <p className="text-sm text-muted-foreground max-w-sm mb-6">{description}</p>
-      {action}
+      
+      {action || (actionLabel && onAction && (
+        <button
+          onClick={onAction}
+          className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] transition-all"
+        >
+          {actionLabel}
+        </button>
+      ))}
     </div>
   );
 }

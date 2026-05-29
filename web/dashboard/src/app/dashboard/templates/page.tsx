@@ -71,7 +71,7 @@ export default function TemplatesPage() {
   // Extract variables in curly braces: {name}, {code}
   const extractVariables = (text: string): string[] => {
     const regex = /\{([a-zA-Z0-9_]+)\}/g;
-    const matches = [];
+    const matches: string[] = [];
     let match;
     while ((match = regex.exec(text)) !== null) {
       if (!matches.includes(match[1])) {
