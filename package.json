@@ -15,6 +15,7 @@
     "build:web": "npm run build -w web/dashboard",
     "build:api": "npm run build -w web/api",
     "start": "concurrently \"npm run start:api\" \"npm run start:web\"",
+    "start:prod": "npm run start:prod -w web/api",
     "start:api": "npm run start:prod -w web/api",
     "start:web": "npm run start -w web/dashboard",
     "lint": "npm run lint --workspaces --if-present",
