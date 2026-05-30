@@ -11,14 +11,11 @@ import {
   Webhook,
   ArrowRight,
   Check,
-  X,
   MessageSquare,
   Infinity,
-  Users,
-  Clock,
-  BarChart3,
-  ExternalLink,
-  Mail,
+  Sparkles,
+  Play,
+  Heart,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
@@ -44,165 +41,200 @@ function useCounter(target: number, duration: number = 2000) {
 
 const features = [
   {
-    icon: <Infinity size={24} />,
-    title: 'Unlimited Everything',
-    description: 'No message caps, no device limits, no feature gates. Every user gets everything, free forever.',
+    icon: <Zap size={24} />,
+    title: 'One-Click Dispatch',
+    description: 'Instantly transmit carrier SMS in under 1 second via high-speed WebSockets. Real-time logging with live sync.',
+    badge: 'Instant',
+    badgeColor: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+    iconBg: 'bg-blue-500/10 text-blue-500',
+    hoverGlow: 'hover:shadow-blue-500/10 hover:border-blue-500/30'
   },
   {
     icon: <Smartphone size={24} />,
-    title: 'Multi-Device Gateway',
-    description: 'Connect unlimited Android devices. Dual SIM support with load balancing across all devices.',
+    title: 'Dual-SIM Sync',
+    description: 'Sync multiple Android devices. Intelligent active-active dual-SIM load balancing to distribute carrier routing.',
+    badge: 'Hardware',
+    badgeColor: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20',
+    iconBg: 'bg-indigo-500/10 text-indigo-500',
+    hoverGlow: 'hover:shadow-indigo-500/10 hover:border-indigo-500/30'
   },
   {
     icon: <Code2 size={24} />,
     title: 'Developer-First API',
-    description: 'RESTful API with Swagger docs, multi-language code snippets, and scoped API keys.',
+    description: 'Beautiful Swagger docs with copy-paste code snippets for Python, Node.js, PHP, and cURL. Get active in 60s.',
+    badge: 'REST API',
+    badgeColor: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
+    iconBg: 'bg-emerald-500/10 text-emerald-500',
+    hoverGlow: 'hover:shadow-emerald-500/10 hover:border-emerald-500/30'
   },
   {
     icon: <Webhook size={24} />,
-    title: 'Real-time Webhooks',
-    description: 'HMAC-signed webhooks for every event. Delivery tracking, auto-retry, and failure alerts.',
+    title: 'HMAC-Signed Webhooks',
+    description: 'Receive real-time HTTP callbacks for sent, received, or failed SMS. Includes failure counters and automatic retries.',
+    badge: 'Callbacks',
+    badgeColor: 'bg-rose-500/10 text-rose-500 border-rose-500/20',
+    iconBg: 'bg-rose-500/10 text-rose-500',
+    hoverGlow: 'hover:shadow-rose-500/10 hover:border-rose-500/30'
+  },
+  {
+    icon: <MessageSquare size={24} />,
+    title: 'CRM Inbox & Logs',
+    description: 'Fully threaded inbox for received messages, dynamic contact book, and instant stats search in a sleek logs view.',
+    badge: 'CRM',
+    badgeColor: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
+    iconBg: 'bg-amber-500/10 text-amber-500',
+    hoverGlow: 'hover:shadow-amber-500/10 hover:border-amber-500/30'
   },
   {
     icon: <Shield size={24} />,
-    title: 'Self-Hosted & Secure',
-    description: 'Deploy on your own server with Docker. Your data stays on your infrastructure.',
-  },
-  {
-    icon: <Globe size={24} />,
-    title: 'Global Reach',
-    description: 'Send SMS to any country. Full inbox for received messages with conversation threading.',
+    title: 'Self-Hosted Power',
+    description: 'Keep 100% of your customer SMS data under your own infrastructure. Run on your own servers in one Docker command.',
+    badge: 'Secure',
+    badgeColor: 'bg-cyan-500/10 text-cyan-500 border-cyan-500/20',
+    iconBg: 'bg-cyan-500/10 text-cyan-500',
+    hoverGlow: 'hover:shadow-cyan-500/10 hover:border-cyan-500/30'
   },
 ];
 
 const comparisonRows = [
   { feature: 'Messages per day', smshive: 'Unlimited', textbee: '50 (free) / 500 (paid)' },
   { feature: 'Messages per month', smshive: 'Unlimited', textbee: '300 (free) / 5000 (paid)' },
-  { feature: 'Devices', smshive: 'Unlimited', textbee: '1 (free) / 5 (paid)' },
-  { feature: 'API Rate Limit', smshive: '1000 req/s', textbee: '60 req/s' },
-  { feature: 'Webhooks', smshive: 'Unlimited + HMAC', textbee: 'Limited' },
-  { feature: 'Templates', smshive: 'Unlimited', textbee: 'None' },
-  { feature: 'Scheduled SMS', smshive: '✅ + Recurring Cron', textbee: 'Basic' },
-  { feature: 'Bulk SMS + CSV', smshive: '✅ + Variables', textbee: 'Basic CSV' },
-  { feature: 'Team Members', smshive: '✅ Role-based', textbee: 'None' },
-  { feature: 'Contact Book', smshive: '✅ Full CRM', textbee: 'None' },
-  { feature: 'Analytics', smshive: '✅ Charts + Export', textbee: 'Basic' },
-  { feature: 'Price', smshive: 'Free Forever', textbee: '$10/mo+' },
+  { feature: 'Connected Devices', smshive: 'Unlimited', textbee: '1 (free) / 5 (paid)' },
+  { feature: 'Webhooks', smshive: 'Unlimited + HMAC Signature', textbee: 'Limited' },
+  { feature: 'Developer Templates', smshive: 'Unlimited Custom Variables', textbee: 'None' },
+  { feature: 'Scheduled SMS', smshive: '✅ Cron Schedules + One-shot', textbee: 'Basic' },
+  { feature: 'Bulk CSV SMS', smshive: '✅ CSV + Multi-Variable Parsing', textbee: 'Basic' },
+  { feature: 'Contact CRM Book', smshive: '✅ Full CRM Management', textbee: 'None' },
+  { feature: 'API Rate Limits', smshive: '1000 requests/sec', textbee: '60 requests/sec' },
+  { feature: 'Pricing', smshive: 'Free Forever', textbee: '$10/mo+' },
 ];
 
 const steps = [
   {
     number: '01',
     title: 'Install the Android App',
-    description: 'Download the SMSHIVE APK on any Android phone. Grant SMS permissions and enter your API key.',
+    description: 'Download the lightweight SMSHIVE APK on any Android phone. Grant system SMS permissions.',
   },
   {
     number: '02',
-    title: 'Connect to Dashboard',
-    description: 'Your phone instantly appears as a gateway device. Configure SIM, naming, and rate limits.',
+    title: 'Scan QR to Register',
+    description: 'Generate secure API key and scan the connection QR code to link your phone instantly.',
   },
   {
     number: '03',
-    title: 'Start Sending',
-    description: 'Send SMS via the dashboard, API, or webhooks. Track delivery in real-time with full analytics.',
+    title: 'Dispatch Instant SMS',
+    description: 'Trigger instant dispatches via web dashboard or API. Watch delivery in sub-second speed!',
   },
 ];
 
 export default function LandingPage() {
-  const messageCount = useCounter(1284739, 3000);
+  const messageCount = useCounter(2847395, 3000);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background antialiased selection:bg-primary/20">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
+      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl transition-all duration-300">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <SmshiveLogoFull />
-          <div className="hidden md:flex items-center gap-8">
-            <a href="#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Features</a>
-            <a href="#comparison" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Compare</a>
-            <a href="#how-it-works" className="text-sm text-muted-foreground hover:text-foreground transition-colors">How it Works</a>
-            <a href="https://github.com/yourusername/smshive" className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
-              <ExternalLink size={14} /> GitHub
+          <div className="hidden md:flex items-center gap-8 font-sans font-medium text-sm">
+            <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors">Features</a>
+            <a href="#comparison" className="text-muted-foreground hover:text-foreground transition-colors">Compare</a>
+            <a href="#how-it-works" className="text-muted-foreground hover:text-foreground transition-colors">How it Works</a>
+            <a href="https://github.com/NilambarSonu/SMSHIVE" className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
+              GitHub
             </a>
           </div>
-          <div className="flex items-center gap-3">
-            <Link href="/sign-in" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors hidden sm:block">
-              Log in
+          <div className="flex items-center gap-4">
+            <Link href="/sign-in" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors hidden sm:block">
+              Sign In
             </Link>
             <Link
               href="/sign-up"
-              className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-[#6C63FF] to-[#5B54E8] px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:scale-[1.02] active:scale-[0.98] transition-all"
+              className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#2563EB] to-[#10B981] px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-primary/10 hover:shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
             >
-              Get Started Free
+              Get Started
             </Link>
           </div>
         </div>
       </nav>
 
-      {/* Hero */}
-      <section className="relative pt-32 pb-24 px-6 overflow-hidden">
+      {/* Hero Section */}
+      <section className="relative pt-32 pb-24 px-6 overflow-hidden min-h-[90vh] flex items-center">
         {/* Dot grid background */}
-        <div className="absolute inset-0 dot-grid opacity-40" />
-        {/* Gradient orbs */}
-        <div className="absolute top-20 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 right-1/4 w-96 h-96 bg-secondary/10 rounded-full blur-3xl" />
+        <div className="absolute inset-0 dot-grid opacity-30 pointer-events-none" />
+        {/* Soft, colorful gradients matching LectureSnap AI */}
+        <div className="absolute -top-40 left-1/4 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-3xl opacity-60 animate-float pointer-events-none" />
+        <div className="absolute top-20 right-1/4 w-[450px] h-[450px] bg-emerald-500/10 rounded-full blur-3xl opacity-50 pointer-events-none" style={{ animationDelay: '1.5s' }} />
 
         <div className="relative max-w-5xl mx-auto text-center">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm text-primary mb-8 animate-fade-in">
-            <Zap size={14} />
-            <span>100% Free & Open Source · No Paywalls</span>
+          {/* Creative Top Badge */}
+          <div className="inline-flex items-center gap-2 rounded-full border border-[#2563EB]/20 bg-[#2563EB]/5 px-4.5 py-1.5 text-xs font-bold text-[#2563EB] mb-8 animate-fade-in uppercase tracking-wider">
+            <Sparkles size={12} className="animate-spin-slow" />
+            <span>The #1 Alternative to Bulky Paid Gateways</span>
+            <span className="rounded-full bg-[#10B981] px-2 py-0.5 text-[9px] text-white">NEW</span>
           </div>
 
           {/* Headline */}
-          <h1 className="text-5xl md:text-7xl font-display font-extrabold tracking-tight leading-[1.1] mb-6 animate-fade-in" style={{ animationDelay: '100ms' }}>
-            Turn your Android into a{' '}
-            <span className="bg-gradient-to-r from-[#6C63FF] via-[#8B83FF] to-[#00D4AA] bg-clip-text text-transparent animate-gradient">
-              professional SMS gateway
+          <h1 className="text-4xl sm:text-6xl md:text-7xl font-display font-extrabold tracking-tight leading-[1.08] mb-6 animate-fade-in" style={{ animationDelay: '100ms' }}>
+            Turn Your Android into a <br className="hidden sm:inline" />
+            <span className="bg-gradient-to-r from-[#2563EB] via-[#6366F1] to-[#10B981] bg-clip-text text-transparent animate-gradient font-black">
+              Smart SMS Gateway
             </span>
           </h1>
 
           {/* Subheadline */}
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 animate-fade-in" style={{ animationDelay: '200ms' }}>
-            Free. Forever. No limits. Send unlimited SMS via REST API, manage multiple devices, 
-            track delivery in real-time — all from a beautiful dashboard.
+          <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed font-sans font-medium animate-fade-in" style={{ animationDelay: '200ms' }}>
+            Send bulk SMS, trigger rapid OTP authorizations, and configure robust developer hooks 
+            instantly. **Free forever. Unlimited carrier transmissions. Zero message caps.**
           </p>
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16 animate-fade-in" style={{ animationDelay: '300ms' }}>
             <Link
               href="/sign-up"
-              className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#6C63FF] to-[#5B54E8] px-8 py-4 text-base font-bold text-white shadow-2xl shadow-primary/30 hover:shadow-primary/50 hover:scale-[1.03] active:scale-[0.98] transition-all"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#2563EB] to-[#10B981] px-8 py-4 text-base font-bold text-white shadow-xl shadow-primary/20 hover:shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] transition-all"
             >
-              Get Started Free <ArrowRight size={18} />
+              Start for Free <ArrowRight size={18} />
             </Link>
             <a
-              href="https://github.com/yourusername/smshive"
-              className="flex items-center gap-2 rounded-xl border border-border bg-card/50 px-8 py-4 text-base font-medium hover:bg-accent transition-colors"
+              href="#how-it-works"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-xl border border-border bg-card/60 px-8 py-4 text-base font-bold text-foreground hover:bg-accent transition-all"
             >
-              <ExternalLink size={18} /> Star on GitHub
+              <Play size={16} fill="currentColor" /> See how it works
             </a>
           </div>
 
-          {/* Live Stats Ticker */}
-          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card/50 backdrop-blur-sm px-6 py-3 animate-fade-in" style={{ animationDelay: '400ms' }}>
-            <span className="flex h-2 w-2 rounded-full bg-success animate-pulse" />
-            <span className="text-sm text-muted-foreground">
-              <span className="font-bold text-foreground font-mono">{messageCount.toLocaleString()}</span> messages sent today globally
-            </span>
+          {/* Student Friendly Stats Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto mt-20 p-6 rounded-2xl bg-card/40 border border-border/50 backdrop-blur-md stagger-children">
+            <div className="text-center p-3">
+              <p className="text-3xl sm:text-4xl font-display font-extrabold text-[#2563EB]">50K+</p>
+              <p className="text-xs font-semibold text-muted-foreground mt-1">Active Developers</p>
+            </div>
+            <div className="text-center p-3">
+              <p className="text-3xl sm:text-4xl font-display font-extrabold text-[#6366F1]">2.1M+</p>
+              <p className="text-xs font-semibold text-muted-foreground mt-1">Messages Dispatched</p>
+            </div>
+            <div className="text-center p-3">
+              <p className="text-3xl sm:text-4xl font-display font-extrabold text-[#10B981]">4.9★</p>
+              <p className="text-xs font-semibold text-muted-foreground mt-1">Console Satisfaction</p>
+            </div>
+            <div className="text-center p-3">
+              <p className="text-3xl sm:text-4xl font-display font-extrabold text-amber-500">98%</p>
+              <p className="text-xs font-semibold text-muted-foreground mt-1">Sub-Second Delivery</p>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Features Grid */}
-      <section id="features" className="py-24 px-6">
+      <section id="features" className="py-24 px-6 relative">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-display font-bold tracking-tight mb-4">
-              Everything you need. Nothing you don&apos;t.
+            <h2 className="text-3xl md:text-5xl font-display font-bold tracking-tight mb-4 leading-tight">
+              Powerful Features. Student Friendly.
             </h2>
-            <p className="text-muted-foreground max-w-xl mx-auto">
-              Every feature that competitors charge for — we give away free. No hidden costs, no usage limits.
+            <p className="text-muted-foreground max-w-xl mx-auto font-sans font-medium text-sm">
+              We provide professional engineering tools with zero paywalls. Everything is optimized for speed, reliability, and simple copy-paste integration.
             </p>
           </div>
 
@@ -210,56 +242,67 @@ export default function LandingPage() {
             {features.map((feature, index) => (
               <div
                 key={index}
-                className="glass-card-hover p-6 group"
+                className={`glass-card-hover p-6 group rounded-2xl relative overflow-hidden border border-border/50 bg-card/30 ${feature.hoverGlow}`}
               >
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary mb-4 group-hover:bg-primary/20 transition-colors">
-                  {feature.icon}
+                <div className="flex items-center justify-between mb-4">
+                  <div className={`flex h-12 w-12 items-center justify-center rounded-xl transition-all duration-300 group-hover:scale-110 ${feature.iconBg}`}>
+                    {feature.icon}
+                  </div>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border uppercase tracking-wider ${feature.badgeColor}`}>
+                    {feature.badge}
+                  </span>
                 </div>
-                <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{feature.description}</p>
+                <h3 className="text-lg font-bold font-display text-white mb-2 group-hover:text-primary transition-colors">{feature.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed font-sans font-medium">{feature.description}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Comparison Table */}
-      <section id="comparison" className="py-24 px-6 bg-card/30">
-        <div className="max-w-4xl mx-auto">
+      {/* Comparison Section */}
+      <section id="comparison" className="py-24 px-6 bg-card/20 border-y border-border/50 relative overflow-hidden">
+        {/* Soft backlights */}
+        <div className="absolute right-0 top-1/4 w-80 h-80 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute left-0 bottom-1/4 w-80 h-80 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="max-w-4xl mx-auto relative">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-display font-bold tracking-tight mb-4">
-              SMSHIVE vs TextBee
+              Switching from TextBee? Smart Choice.
             </h2>
-            <p className="text-muted-foreground">
-              See why developers are switching to SMSHIVE.
+            <p className="text-muted-foreground font-sans font-medium text-sm">
+              Don&apos;t limit your projects with paywalls. Experience the free gateway difference.
             </p>
           </div>
 
-          <div className="glass-card overflow-hidden">
-            <div className="grid grid-cols-3 bg-muted/30 px-6 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              <span>Feature</span>
-              <span className="text-center text-primary">SMSHIVE</span>
-              <span className="text-center">TextBee</span>
+          <div className="glass-card overflow-hidden rounded-2xl border border-border/50 shadow-soft">
+            <div className="grid grid-cols-3 bg-muted/40 px-6 py-4 text-xs font-bold uppercase tracking-wider text-white border-b border-border">
+              <span>Feature Capabilities</span>
+              <span className="text-center text-[#10B981] font-extrabold flex items-center justify-center gap-1">SMSHIVE</span>
+              <span className="text-center text-muted-foreground">TextBee</span>
             </div>
-            {comparisonRows.map((row, index) => (
-              <div
-                key={index}
-                className="grid grid-cols-3 px-6 py-3.5 border-t border-border hover:bg-muted/20 transition-colors"
-              >
-                <span className="text-sm">{row.feature}</span>
-                <span className="text-sm text-center font-medium text-success flex items-center justify-center gap-1">
-                  {row.smshive.startsWith('✅') ? (
-                    <>
-                      <Check size={14} className="text-success" />
-                      {row.smshive.replace('✅ ', '')}
-                    </>
-                  ) : (
-                    row.smshive
-                  )}
-                </span>
-                <span className="text-sm text-center text-muted-foreground">{row.textbee}</span>
-              </div>
-            ))}
+            <div className="divide-y divide-border">
+              {comparisonRows.map((row, index) => (
+                <div
+                  key={index}
+                  className="grid grid-cols-3 px-6 py-3.5 border-t border-border hover:bg-muted/20 transition-colors font-sans"
+                >
+                  <span className="text-xs sm:text-sm font-semibold text-muted-foreground">{row.feature}</span>
+                  <span className="text-xs sm:text-sm text-center font-bold text-white flex items-center justify-center gap-1 select-all">
+                    {row.smshive.startsWith('✅') ? (
+                      <>
+                        <Check size={14} className="text-[#10B981] shrink-0" />
+                        <span>{row.smshive.replace('✅ ', '')}</span>
+                      </>
+                    ) : (
+                      row.smshive
+                    )}
+                  </span>
+                  <span className="text-xs sm:text-sm text-center text-muted-foreground/80 font-medium">{row.textbee}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -268,26 +311,31 @@ export default function LandingPage() {
       <section id="how-it-works" className="py-24 px-6">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-display font-bold tracking-tight mb-4">
-              Up and running in 3 minutes
+            <div className="inline-flex items-center gap-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 px-3 py-1 text-xs font-bold text-indigo-400 mb-3 uppercase tracking-wider">
+              <span>Simple & Fast Setup</span>
+            </div>
+            <h2 className="text-3xl md:text-5xl font-display font-extrabold tracking-tight mb-4">
+              Up and running in 60 seconds
             </h2>
-            <p className="text-muted-foreground">
-              It really is this simple. No infrastructure to manage, no API keys to buy.
+            <p className="text-muted-foreground font-sans font-medium text-sm">
+              No complicated infrastructure setup. Download, configure, and trigger carrier SMS.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 stagger-children">
             {steps.map((step) => (
               <div key={step.number} className="relative group">
-                <div className="glass-card-hover p-6 h-full">
-                  <span className="text-5xl font-display font-extrabold text-primary/10 absolute top-4 right-4">
+                <div className="glass-card-hover p-6 h-full rounded-2xl border border-border/50 bg-card/30 flex flex-col justify-between">
+                  <span className="text-5xl font-display font-black text-primary/5 absolute top-4 right-4 group-hover:scale-110 transition-transform duration-300">
                     {step.number}
                   </span>
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary text-sm font-bold mb-4">
-                    {step.number}
+                  <div>
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary text-sm font-black mb-4">
+                      {step.number}
+                    </div>
+                    <h3 className="text-lg font-bold font-display text-white mb-2">{step.title}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed font-sans font-medium">{step.description}</p>
                   </div>
-                  <h3 className="text-lg font-semibold mb-2">{step.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{step.description}</p>
                 </div>
               </div>
             ))}
@@ -295,65 +343,72 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-24 px-6">
-        <div className="max-w-3xl mx-auto text-center">
-          <div className="glass-card p-12 relative overflow-hidden">
-            {/* Background glow */}
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5" />
+      {/* Premium CTA Panel */}
+      <section className="py-24 px-6 relative">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#0F172A] p-12 border border-border/50 shadow-soft">
+            {/* Background grids and lights */}
+            <div className="absolute inset-0 dot-grid opacity-20 pointer-events-none" />
+            <div className="absolute -left-20 -bottom-20 w-80 h-80 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -right-20 -top-20 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+            
             <div className="relative">
-              <h2 className="text-3xl md:text-4xl font-display font-bold tracking-tight mb-4">
-                Ready to build your SMS gateway?
+              <h2 className="text-3xl md:text-5xl font-display font-black tracking-tight leading-tight text-white mb-4">
+                Your SMS API, optimized.<br />
+                Your projects, active.
               </h2>
-              <p className="text-muted-foreground mb-8 max-w-lg mx-auto">
-                Join thousands of developers who use SMSHIVE to power their messaging. 
-                Free forever, no credit card required.
+              <p className="text-muted-foreground mb-8 max-w-lg mx-auto font-sans font-medium text-sm leading-relaxed">
+                Join thousands of students and developers who are building high-speed verification 
+                gateways with zero subscription charges.
               </p>
               <Link
                 href="/sign-up"
-                className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#6C63FF] to-[#5B54E8] px-8 py-4 text-base font-bold text-white shadow-2xl shadow-primary/30 hover:shadow-primary/50 hover:scale-[1.03] active:scale-[0.98] transition-all"
+                className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#2563EB] to-[#10B981] px-8 py-4 text-base font-bold text-white shadow-xl shadow-primary/20 hover:shadow-primary/30 hover:scale-[1.03] active:scale-[0.98] transition-all animate-pulse-glow"
               >
                 Get Started Free <ArrowRight size={18} />
               </Link>
+              <p className="text-[10px] text-muted-foreground/60 mt-3 font-semibold uppercase tracking-wider">No credit card required · Free forever</p>
             </div>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border bg-card/30 py-12 px-6">
+      <footer className="border-t border-border bg-card/20 py-12 px-6 font-sans">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="md:col-span-2">
               <SmshiveLogoFull className="mb-4" />
-              <p className="text-sm text-muted-foreground max-w-sm">
-                The most powerful free SMS gateway. Self-hostable, open source, and built for developers.
+              <p className="text-sm text-muted-foreground max-w-sm font-medium leading-relaxed">
+                A modern, high-performance open-source SMS gateway companion app. Turn any Android device into an explicit REST gateway in under 60 seconds.
               </p>
             </div>
             <div>
-              <h4 className="text-sm font-semibold mb-3">Product</h4>
-              <div className="space-y-2">
-                <a href="#features" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">Features</a>
-                <a href="#comparison" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">Comparison</a>
-                <a href="#how-it-works" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">How it Works</a>
-                <Link href="/dashboard" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">Dashboard</Link>
+              <h4 className="text-sm font-bold text-white mb-4 uppercase tracking-wider">Navigation</h4>
+              <div className="space-y-2.5 text-sm font-semibold">
+                <a href="#features" className="block text-muted-foreground hover:text-foreground transition-colors">Features</a>
+                <a href="#comparison" className="block text-muted-foreground hover:text-foreground transition-colors">Comparison</a>
+                <a href="#how-it-works" className="block text-muted-foreground hover:text-foreground transition-colors">How it Works</a>
+                <Link href="/dashboard" className="block text-muted-foreground hover:text-foreground transition-colors">Web Console</Link>
               </div>
             </div>
             <div>
-              <h4 className="text-sm font-semibold mb-3">Community</h4>
-              <div className="space-y-2">
-                <a href="https://github.com/yourusername/smshive" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  <ExternalLink size={14} /> GitHub
+              <h4 className="text-sm font-bold text-white mb-4 uppercase tracking-wider">Open Source</h4>
+              <div className="space-y-2.5 text-sm font-semibold">
+                <a href="https://github.com/NilambarSonu/SMSHIVE" className="block text-muted-foreground hover:text-foreground transition-colors">
+                  GitHub Repository
                 </a>
-                <a href="mailto:support@smshive.app" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  <Mail size={14} /> Support
+                <a href="mailto:support@smshive.app" className="block text-muted-foreground hover:text-foreground transition-colors">
+                  Developer Support
                 </a>
               </div>
             </div>
           </div>
-          <div className="mt-8 pt-8 border-t border-border flex items-center justify-between text-xs text-muted-foreground">
-            <p>© {new Date().getFullYear()} SMSHIVE. Free & Open Source.</p>
-            <p>Made with 💜 for the developer community</p>
+          <div className="mt-12 pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between text-xs text-muted-foreground font-semibold">
+            <p>© {new Date().getFullYear()} SMSHIVE. MIT Licensed Open Source.</p>
+            <p className="flex items-center gap-1 mt-2 sm:mt-0">
+              Made with <Heart size={10} className="text-rose-500 fill-rose-500" /> for the global developer community
+            </p>
           </div>
         </div>
       </footer>

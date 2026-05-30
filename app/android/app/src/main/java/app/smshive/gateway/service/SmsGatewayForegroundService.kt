@@ -116,8 +116,17 @@ class SmsGatewayForegroundService : Service() {
 
     private fun setupWebSocket() {
         if (prefs.serverUrl.isEmpty() || prefs.deviceId.isEmpty()) return
+        if (!isRunning) return
         try {
-            val client = okhttp3.OkHttpClient()
+            try {
+                webSocket?.close(1000, "Reconnecting")
+            } catch (e: Exception) {}
+            webSocket = null
+
+            val client = okhttp3.OkHttpClient.Builder()
+                .pingInterval(15, java.util.concurrent.TimeUnit.SECONDS)
+                .build()
+
             val baseUrl = prefs.serverUrl.trimEnd('/')
             val wsUrl = "$baseUrl/api/ws".replace("https://", "wss://").replace("http://", "ws://")
             val request = okhttp3.Request.Builder().url(wsUrl).build()
@@ -147,10 +156,24 @@ class SmsGatewayForegroundService : Service() {
                     } catch (e: Exception) { e.printStackTrace() }
                 }
                 override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
-                    updateNotification("Active · Offline - Polling fallback")
+                    updateNotification("Active · Offline - Retrying...")
+                    android.util.Log.e("SMSHiveService", "WebSocket failure: ${t.message}", t)
+                    reconnect()
                 }
                 override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
-                    updateNotification("Active · Reconnecting...")
+                    updateNotification("Active · Offline - Reconnecting...")
+                    reconnect()
+                }
+
+                private fun reconnect() {
+                    if (isRunning) {
+                        serviceScope.launch {
+                            delay(5000L)
+                            if (isRunning) {
+                                setupWebSocket()
+                            }
+                        }
+                    }
                 }
             })
         } catch (e: Exception) {
