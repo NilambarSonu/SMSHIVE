@@ -26,6 +26,17 @@ export class SmsProcessor {
   async handleSms(job: Job<SmsJobData>) {
     const { deviceId, phone, message, smsId } = job.data;
     
+    // Check if the message is already processed to prevent double-dispatches
+    try {
+      const sms = await this.smsService.findById(smsId);
+      if (sms.status === 'sent' || sms.status === 'delivered' || sms.status === 'failed') {
+        this.logger.log(`SMS ${smsId} has already been processed (${sms.status}). Skipping duplicate queue dispatch.`);
+        return;
+      }
+    } catch (err: any) {
+      this.logger.warn(`Failed to inspect SMS status during queue processing: ${err.message}`);
+    }
+
     // Emit the message via WebSockets
     this.logger.log(`Dispatching SMS ${smsId} to device ${deviceId} via WebSocket.`);
     this.gatewayEvents.emitNewSms(deviceId, {

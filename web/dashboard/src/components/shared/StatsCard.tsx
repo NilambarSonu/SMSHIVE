@@ -10,6 +10,7 @@ interface StatsCardProps {
   icon: React.ReactNode;
   className?: string;
   loading?: boolean;
+  variant?: 'blue' | 'emerald' | 'purple' | 'amber' | 'violet' | 'teal';
 }
 
 export function StatsCard({
@@ -20,6 +21,7 @@ export function StatsCard({
   icon,
   className,
   loading = false,
+  variant,
 }: StatsCardProps) {
   if (loading) {
     return (
@@ -36,11 +38,22 @@ export function StatsCard({
 
   const isPositive = change !== undefined && change >= 0;
 
+  const variantClasses = {
+    blue: 'bg-blue-500/10 text-blue-500 dark:bg-blue-500/15 dark:text-blue-400 group-hover:bg-blue-500/20',
+    emerald: 'bg-emerald-500/10 text-emerald-500 dark:bg-emerald-500/15 dark:text-emerald-400 group-hover:bg-emerald-500/20',
+    purple: 'bg-purple-500/10 text-purple-500 dark:bg-purple-500/15 dark:text-purple-400 group-hover:bg-purple-500/20',
+    amber: 'bg-amber-500/10 text-amber-500 dark:bg-amber-500/15 dark:text-amber-400 group-hover:bg-amber-500/20',
+    violet: 'bg-indigo-500/10 text-indigo-500 dark:bg-indigo-500/15 dark:text-indigo-400 group-hover:bg-indigo-500/20',
+    teal: 'bg-teal-500/10 text-teal-500 dark:bg-teal-500/15 dark:text-teal-400 group-hover:bg-teal-500/20',
+  };
+
+  const selectedVariant = variant ? variantClasses[variant] : 'bg-primary/10 text-primary group-hover:bg-primary/20';
+
   return (
     <div className={cn('glass-card-hover p-5 group', className)}>
       <div className="flex items-center justify-between mb-3">
         <p className="text-sm font-medium text-muted-foreground">{title}</p>
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary/20">
+        <div className={cn('flex h-9 w-9 items-center justify-center rounded-lg transition-colors', selectedVariant)}>
           {icon}
         </div>
       </div>

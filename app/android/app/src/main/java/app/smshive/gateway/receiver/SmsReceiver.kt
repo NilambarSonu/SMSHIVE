@@ -29,55 +29,60 @@ class SmsReceiver : BroadcastReceiver() {
         val deviceId = prefs.deviceId
         val apiKey = prefs.apiKey
 
+        val pendingResult = goAsync()
         scope.launch {
-            for (pdu in pdus) {
-                val sms = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    SmsMessage.createFromPdu(pdu as ByteArray, format)
-                } else {
-                    @Suppress("DEPRECATION")
-                    SmsMessage.createFromPdu(pdu as ByteArray)
-                }
+            try {
+                for (pdu in pdus) {
+                    val sms = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        SmsMessage.createFromPdu(pdu as ByteArray, format)
+                    } else {
+                        @Suppress("DEPRECATION")
+                        SmsMessage.createFromPdu(pdu as ByteArray)
+                    }
 
-                val sender = sms.originatingAddress ?: continue
-                val message = sms.messageBody ?: continue
-                val timestamp = sms.timestampMillis
-                val simSlot = 0 // Default to SIM 1 or let Telephony manager resolve if possible
+                    val sender = sms.originatingAddress ?: continue
+                    val message = sms.messageBody ?: continue
+                    val timestamp = sms.timestampMillis
+                    val simSlot = 0 // Default to SIM 1 or let Telephony manager resolve if possible
 
-                // Save locally first
-                db.smsDao().insertReceived(
-                    ReceivedMessage(
-                        sender = sender,
-                        message = message,
-                        receivedAt = timestamp,
-                        forwarded = false
-                    )
-                )
-
-                // If device and key are registered, forward to server
-                if (deviceId.isNotEmpty() && apiKey.isNotEmpty()) {
-                    try {
-                        val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US)
-                        val dateStr = sdf.format(Date(timestamp))
-
-                        val response = api.receiveSms(
-                            deviceId,
-                            apiKey,
-                            IncomingSmsRequest(
-                                sender = sender,
-                                message = message,
-                                simSlot = simSlot,
-                                receivedAt = dateStr
-                            )
+                    // Save locally first
+                    db.smsDao().insertReceived(
+                        ReceivedMessage(
+                            sender = sender,
+                            message = message,
+                            receivedAt = timestamp,
+                            forwarded = false
                         )
-                        if (response.success) {
-                            // Mark as forwarded
-                            val lastId = db.smsDao().getRecentReceived()
-                            // Simple update - for simplicity we just proceed
+                    )
+
+                    // If device and key are registered, forward to server
+                    if (deviceId.isNotEmpty() && apiKey.isNotEmpty()) {
+                        try {
+                            val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US)
+                            val dateStr = sdf.format(Date(timestamp))
+
+                            val response = api.receiveSms(
+                                deviceId,
+                                apiKey,
+                                IncomingSmsRequest(
+                                    sender = sender,
+                                    message = message,
+                                    simSlot = simSlot,
+                                    receivedAt = dateStr
+                                )
+                            )
+                            if (response.success) {
+                                // Mark as forwarded
+                                val lastId = db.smsDao().getRecentReceived()
+                                // Simple update - for simplicity we just proceed
+                            }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
                         }
-                    } catch (e: Exception) {
-                        e.printStackTrace()
                     }
                 }
+            } finally {
+                pendingResult.finish()
             }
         }
     }

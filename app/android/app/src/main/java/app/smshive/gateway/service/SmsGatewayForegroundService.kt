@@ -29,6 +29,7 @@ class SmsGatewayForegroundService : Service() {
     private var sentTodayCount = 0
     private var lastSyncSecondsAgo = 0
     private val simRoundRobinCounter = AtomicInteger(0)
+    private val processedSmsIds = java.util.concurrent.ConcurrentHashMap<String, Long>()
 
     companion object {
         const val CHANNEL_ID = "smshive_gateway_channel"
@@ -172,6 +173,22 @@ class SmsGatewayForegroundService : Service() {
     }
 
     private fun sendSms(sms: PendingSms, retryCount: Int = 0) {
+        val smsId = sms.id ?: return
+        val now = System.currentTimeMillis()
+        
+        // Clean up old entries from processedSmsIds (older than 10 minutes)
+        val iterator = processedSmsIds.entries.iterator()
+        while (iterator.hasNext()) {
+            if (now - iterator.next().value > 10 * 60 * 1000L) {
+                iterator.remove()
+            }
+        }
+
+        if (retryCount == 0 && processedSmsIds.putIfAbsent(smsId, now) != null) {
+            android.util.Log.d("SMSHiveService", "SMS $smsId was already processed recently, ignoring duplicate.")
+            return
+        }
+
         val context = this
         serviceScope.launch {
             val simSlot = sms.simSlot ?: when (prefs.simPreference) {
@@ -200,6 +217,7 @@ class SmsGatewayForegroundService : Service() {
                     context,
                     smsId.hashCode(),
                     Intent(ACTION_SMS_SENT).apply {
+                        setPackage(context.packageName)
                         putExtra("smsId", smsId)
                         putExtra("recipient", recipient)
                         putExtra("message", sms.message)
@@ -211,7 +229,10 @@ class SmsGatewayForegroundService : Service() {
                 val deliveredIntent = PendingIntent.getBroadcast(
                     context,
                     smsId.hashCode() + 1,
-                    Intent(ACTION_SMS_DELIVERED).apply { putExtra("smsId", smsId) },
+                    Intent(ACTION_SMS_DELIVERED).apply {
+                        setPackage(context.packageName)
+                        putExtra("smsId", smsId)
+                    },
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 )
 

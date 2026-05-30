@@ -23,6 +23,7 @@ class SmsStatusReceiver : BroadcastReceiver() {
         val prefs = PreferencesManager(context)
         val api = ApiService.create(prefs.serverUrl)
 
+        val pendingResult = goAsync()
         scope.launch {
             try {
                 if (action == SmsGatewayForegroundService.ACTION_SMS_SENT) {
@@ -39,6 +40,8 @@ class SmsStatusReceiver : BroadcastReceiver() {
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
+            } finally {
+                pendingResult.finish()
             }
         }
     }
