@@ -24,6 +24,7 @@ export default function RootLayout({
 }) {
   return (
     <ClerkProvider
+      publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || "pk_test_ZHVtbXkua2V5LmNsZXJrLmFjY291bnRzLmRldiQ"}
       appearance={{
         baseTheme: dark,
         variables: {

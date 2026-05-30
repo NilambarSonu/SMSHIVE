@@ -8,11 +8,20 @@ const isPublicRoute = createRouteMatcher([
   '/api(.*)',
 ]);
 
-export default clerkMiddleware(async (auth, request) => {
-  if (!isPublicRoute(request)) {
-    await auth.protect();
-  }
-});
+import { NextResponse } from 'next/server';
+
+const hasClerkKeys = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && process.env.CLERK_SECRET_KEY;
+
+export default hasClerkKeys
+  ? clerkMiddleware(async (auth, request) => {
+      if (!isPublicRoute(request)) {
+        await auth.protect();
+      }
+    })
+  : () => {
+      console.warn("⚠️ Clerk keys are missing. Authentication is bypassed in middleware.");
+      return NextResponse.next();
+    };
 
 export const config = {
   matcher: [
