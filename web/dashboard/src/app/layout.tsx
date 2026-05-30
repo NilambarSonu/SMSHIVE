@@ -41,13 +41,6 @@ export default function RootLayout({
           fontFamily: "'Inter', ui-sans-serif, system-ui, sans-serif",
         },
         elements: {
-          // Hide social login buttons (Email + Password only for MVP)
-          socialButtonsBlockButton: { display: 'none' },
-          socialButtonsBlockButtonText: { display: 'none' },
-          socialButtonsProviderIcon: { display: 'none' },
-          dividerRow: { display: 'none' },
-          dividerText: { display: 'none' },
-          dividerLine: { display: 'none' },
           // Card styling
           card: {
             backgroundColor: 'hsl(222 47% 14% / 0.6)',

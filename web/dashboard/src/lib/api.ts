@@ -89,7 +89,7 @@ class ApiClient {
     if (response.status === 401) {
       // Clerk handles session refresh automatically.
       // If we still get 401, the session is truly expired.
-      if (typeof window !== 'undefined') {
+      if (token && typeof window !== 'undefined') {
         window.location.href = '/sign-in';
       }
       throw new ApiError(401, 'Session expired. Please sign in again.');

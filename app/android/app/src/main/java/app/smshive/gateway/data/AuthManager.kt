@@ -113,7 +113,18 @@ class AuthManager(context: Context) {
                 userEmail = email
                 Result.success(jwt)
             } else {
-                Result.failure(Exception("Could not retrieve session token"))
+                val responseObj = signInResp["response"] as? Map<*, *>
+                val attemptStatus = responseObj?.get("status") as? String
+                    ?: (clientObj?.get("sign_in") as? Map<*, *>)?.get("status") as? String
+                
+                val errMsg = if (attemptStatus == "needs_client_trust") {
+                    "New device email verification is active. Please check your email or disable 'Device Trust' in the Clerk Dashboard under Security -> Attack Protection."
+                } else if (attemptStatus != null) {
+                    "Sign-in requires additional verification: $attemptStatus"
+                } else {
+                    "Could not retrieve session token"
+                }
+                Result.failure(Exception(errMsg))
             }
         } catch (e: Exception) {
             Result.failure(e)

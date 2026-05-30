@@ -26,12 +26,6 @@ export default function SignInPage() {
                   card: 'w-full shadow-none bg-transparent border-none p-0',
                   headerTitle: 'hidden',
                   headerSubtitle: 'hidden',
-                  socialButtonsBlockButton: { display: 'none' },
-                  socialButtonsBlockButtonText: { display: 'none' },
-                  socialButtonsProviderIcon: { display: 'none' },
-                  dividerRow: { display: 'none' },
-                  dividerText: { display: 'none' },
-                  dividerLine: { display: 'none' },
                   formButtonPrimary:
                     'bg-gradient-to-r from-[#6C63FF] to-[#5B54E8] hover:opacity-90 transition-opacity shadow-lg shadow-primary/25 rounded-xl h-12 text-base font-medium',
                   formFieldInput:
