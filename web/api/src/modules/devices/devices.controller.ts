@@ -6,6 +6,7 @@ import {
   Delete,
   Body,
   Param,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
@@ -29,6 +30,23 @@ export class DevicesController {
   @ApiOperation({ summary: 'List all devices for the current user' })
   async findAll(@CurrentUser('userId') userId: string) {
     return this.devicesService.findAllByUser(userId);
+  }
+
+  @Post('generate-qr-token')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Generate a QR token for device registration' })
+  async generateQrToken(@CurrentUser('userId') userId: string) {
+    return this.devicesService.generateQrToken(userId);
+  }
+
+  @Get('qr-token-status')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Check status of a QR registration token' })
+  async getQrTokenStatus(
+    @CurrentUser('userId') userId: string,
+    @Query('token') token: string,
+  ) {
+    return this.devicesService.getQrTokenStatus(token, userId);
   }
 
   @Post('register')

@@ -42,6 +42,26 @@ export class CreateDeviceDto {
   @IsOptional()
   model?: string;
 
+  @ApiProperty({ example: 'token_xyz123', required: false })
+  @IsString()
+  @IsOptional()
+  qrToken?: string;
+
+  @ApiProperty({ example: 'Samsung', required: false })
+  @IsString()
+  @IsOptional()
+  deviceBrand?: string;
+
+  @ApiProperty({ example: '14', required: false })
+  @IsString()
+  @IsOptional()
+  androidVersion?: string;
+
+  @ApiProperty({ example: '1.0.0', required: false })
+  @IsString()
+  @IsOptional()
+  appVersion?: string;
+
   @ApiProperty({ type: [SimInfoDto], required: false })
   @IsArray()
   @IsOptional()

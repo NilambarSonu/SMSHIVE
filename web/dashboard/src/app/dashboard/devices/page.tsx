@@ -69,6 +69,8 @@ export default function DevicesPage() {
 
   // Generate QR Code Setup Data
   const [qrCodeUrl, setQrCodeUrl] = useState('');
+  const [qrToken, setQrToken] = useState('');
+  const [polling, setPolling] = useState(false);
 
   const fetchDevices = async (isSilent = false) => {
     if (!isSilent) setLoading(true);
@@ -115,22 +117,59 @@ export default function DevicesPage() {
     setServerUrl(window.location.origin.replace('3000', '8000')); // default API port
   }, []);
 
-  // Update QR Code on modal open
+  // Fetch QR Token on modal open
   useEffect(() => {
-    if (showAddModal && apiKey && serverUrl) {
-      // Generate a mock unique device ID that they'll claim
-      const randomDeviceId = 'dev_' + Math.random().toString(36).substring(2, 10);
-      const setupObj = {
-        apiKey: apiKey,
-        serverUrl: serverUrl,
-        deviceId: randomDeviceId,
-        deviceName: newDeviceName || 'Android Gateway',
+    if (showAddModal) {
+      const fetchQrToken = async () => {
+        try {
+          const response = await api.post<{ data: { qrToken: string; apiKey?: string; expiresAt: string } }>('/api/v1/devices/generate-qr-token');
+          if (response?.data) {
+            const fetchedToken = response.data.qrToken;
+            const fetchedApiKey = response.data.apiKey || apiKey;
+            setQrToken(fetchedToken);
+            
+            const setupObj = {
+              v: 1,
+              apiKey: fetchedApiKey,
+              serverUrl: window.location.origin.replace('3000', '8000'),
+              qrToken: fetchedToken,
+            };
+            const qrData = encodeURIComponent(JSON.stringify(setupObj));
+            setQrCodeUrl(`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${qrData}`);
+            setPolling(true);
+          }
+        } catch (err) {
+          toast.error('Failed to generate QR token');
+        }
       };
-      
-      const qrData = encodeURIComponent(JSON.stringify(setupObj));
-      setQrCodeUrl(`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${qrData}`);
+      fetchQrToken();
+    } else {
+      setQrToken('');
+      setQrCodeUrl('');
+      setPolling(false);
     }
-  }, [showAddModal, apiKey, serverUrl, newDeviceName]);
+  }, [showAddModal, apiKey]);
+
+  // Poll for QR Token status
+  useEffect(() => {
+    if (!polling || !qrToken) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const response = await api.get<{ data: { status: string; deviceId?: string; deviceName?: string } }>(`/api/v1/devices/qr-token-status?token=${qrToken}`);
+        if (response?.data?.status === 'connected') {
+          toast.success(`Device ${response.data.deviceName || 'connected'} registered successfully!`);
+          setShowAddModal(false);
+          setPolling(false);
+          fetchDevices(true);
+        }
+      } catch (err) {
+        // Silent fail for polling
+      }
+    }, 2500);
+
+    return () => clearInterval(interval);
+  }, [polling, qrToken]);
 
   const handleCopyId = async (deviceId: string) => {
     await copyToClipboard(deviceId);
