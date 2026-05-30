@@ -173,14 +173,14 @@ if ($err) {
 
     setCreating(true);
     try {
-      const response = await api.post<{ data: ApiKey }>('/api/v1/api-keys', {
+      const response = await api.post<{ data: { apiKey: ApiKey; rawKey: string } }>('/api/v1/api-keys', {
         name: keyName,
         scopes: selectedScopes,
         rateLimit,
       });
 
       if (response?.data) {
-        const generatedKey = response.data.key || 'key-not-returned';
+        const generatedKey = response.data.rawKey || 'key-not-returned';
         setNewKeyRevealed(generatedKey);
         setIntegrationApiKey(generatedKey);
         toast.success('API Key generated successfully');
