@@ -38,7 +38,11 @@ import { EmailsModule } from './modules/emails/emails.module.js';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        redis: configService.get<string>('redis.url'),
+        redis: {
+          url: configService.get<string>('redis.url'),
+          enableOfflineQueue: false,
+          maxRetriesPerRequest: 1,
+        },
       }),
     }),
     ScheduleModule.forRoot(),

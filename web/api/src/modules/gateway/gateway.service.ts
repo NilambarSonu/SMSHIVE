@@ -51,27 +51,25 @@ export class GatewayService {
       this.logger.warn(`WebSocket immediate emit failed: ${wsErr.message}`);
     }
 
-    // Push to the Bull queue as background backup/retry
-    try {
-      await this.smsQueue.add(
-        {
-          deviceId,
-          phone: sms.recipients.join(','),
-          message: sms.message,
-          smsId: (sms._id as object).toString(),
+    // Push to the Bull queue in background as backup/retry (non-blocking)
+    this.smsQueue.add(
+      {
+        deviceId,
+        phone: sms.recipients.join(','),
+        message: sms.message,
+        smsId: (sms._id as object).toString(),
+      },
+      {
+        removeOnComplete: true,
+        attempts: 3,
+        backoff: {
+          type: 'exponential',
+          delay: 2000,
         },
-        {
-          removeOnComplete: true,
-          attempts: 3,
-          backoff: {
-            type: 'exponential',
-            delay: 2000,
-          },
-        }
-      );
-    } catch (err: any) {
+      }
+    ).catch((err: any) => {
       this.logger.warn(`Failed to push SMS to Bull queue (Redis offline/missing): ${err.message}`);
-    }
+    });
 
     return sms;
   }
@@ -112,28 +110,26 @@ export class GatewayService {
       }
     }
 
-    // Queue successful creations in Bull
+    // Queue successful creations in Bull (non-blocking background loop)
     for (const sms of successful) {
-      try {
-        await this.smsQueue.add(
-          {
-            deviceId: sms.deviceId,
-            phone: sms.recipients.join(','),
-            message: sms.message,
-            smsId: (sms._id as object).toString(),
+      this.smsQueue.add(
+        {
+          deviceId: sms.deviceId,
+          phone: sms.recipients.join(','),
+          message: sms.message,
+          smsId: (sms._id as object).toString(),
+        },
+        {
+          removeOnComplete: true,
+          attempts: 3,
+          backoff: {
+            type: 'exponential',
+            delay: 2000,
           },
-          {
-            removeOnComplete: true,
-            attempts: 3,
-            backoff: {
-              type: 'exponential',
-              delay: 2000,
-            },
-          }
-        );
-      } catch (err: any) {
+        }
+      ).catch((err: any) => {
         this.logger.warn(`Failed to push bulk SMS to Bull queue: ${err.message}`);
-      }
+      });
     }
 
     const failed = results
