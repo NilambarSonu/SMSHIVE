@@ -87,7 +87,7 @@ class SmsGatewayForegroundService : Service() {
                 try {
                     pollPendingSms()
                 } catch (e: Exception) {
-                    e.printStackTrace()
+                    android.util.Log.e("SMSHiveService", "SMS polling failed: ${e.message}", e)
                 }
                 delay(prefs.pollingIntervalSeconds * 1000L)
             }
@@ -304,7 +304,7 @@ class SmsGatewayForegroundService : Service() {
             } catch (e: SecurityException) { e.printStackTrace() }
         }
 
-        return try {
+        try {
             val result = api.sendHeartbeat(
                 deviceId,
                 apiKey,
@@ -316,9 +316,10 @@ class SmsGatewayForegroundService : Service() {
                     appVersion = "2.0.0"
                 )
             )
-            result.data?.pendingCount ?: 0
+            return result.data?.pendingCount ?: 0
         } catch (e: Exception) {
-            0
+            android.util.Log.e("SMSHiveService", "Heartbeat failed: ${e.message}", e)
+            throw e
         }
     }
 
