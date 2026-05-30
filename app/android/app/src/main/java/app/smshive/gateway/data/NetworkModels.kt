@@ -2,7 +2,33 @@ package app.smshive.gateway.data
 
 import com.google.gson.annotations.SerializedName
 
-// Heartbeat DTOs
+// ── QR Config (from scanned QR) ──────────────────
+data class QrConfig(
+    @SerializedName("v") val v: Int,
+    @SerializedName("apiKey") val apiKey: String,
+    @SerializedName("serverUrl") val serverUrl: String,
+    @SerializedName("qrToken") val qrToken: String
+)
+
+// ── Device Registration ───────────────────────────
+data class DeviceRegisterRequest(
+    @SerializedName("name") val name: String,
+    @SerializedName("deviceId") val deviceId: String? = null,
+    @SerializedName("model") val model: String,
+    @SerializedName("qrToken") val qrToken: String? = null,
+    @SerializedName("deviceBrand") val deviceBrand: String? = null,
+    @SerializedName("androidVersion") val androidVersion: String? = null,
+    @SerializedName("appVersion") val appVersion: String? = null
+)
+
+data class DeviceRegisterResponse(
+    @SerializedName("_id") val id: String?,
+    @SerializedName("deviceId") val deviceId: String?,
+    @SerializedName("name") val name: String?,
+    @SerializedName("status") val status: String?
+)
+
+// ── Heartbeat ─────────────────────────────────────
 data class SimInfo(
     @SerializedName("slot") val slot: Int,
     @SerializedName("carrier") val carrier: String,
@@ -18,7 +44,16 @@ data class HeartbeatRequest(
     @SerializedName("appVersion") val appVersion: String
 )
 
-// Pending SMS DTO
+data class HeartbeatResponse(
+    @SerializedName("success") val success: Boolean,
+    @SerializedName("data") val data: HeartbeatData?
+)
+
+data class HeartbeatData(
+    @SerializedName("pendingCount") val pendingCount: Int = 0
+)
+
+// ── Pending SMS ───────────────────────────────────
 data class PendingSms(
     @SerializedName("_id") val id: String,
     @SerializedName("recipients") val recipients: List<String>,
@@ -31,13 +66,13 @@ data class PendingSmsResponse(
     @SerializedName("data") val data: List<PendingSms>
 )
 
-// Update Status DTO
+// ── SMS Status Update ─────────────────────────────
 data class StatusUpdateRequest(
     @SerializedName("status") val status: String,
     @SerializedName("errorMessage") val errorMessage: String? = null
 )
 
-// Incoming SMS DTO
+// ── Incoming SMS ──────────────────────────────────
 data class IncomingSmsRequest(
     @SerializedName("sender") val sender: String,
     @SerializedName("message") val message: String,
@@ -45,13 +80,7 @@ data class IncomingSmsRequest(
     @SerializedName("receivedAt") val receivedAt: String
 )
 
-// Register Device DTOs
-data class DeviceRegisterRequest(
-    @SerializedName("deviceId") val deviceId: String,
-    @SerializedName("name") val name: String,
-    @SerializedName("model") val model: String
-)
-
+// ── Generic API Response ──────────────────────────
 data class ApiResponse<T>(
     @SerializedName("success") val success: Boolean,
     @SerializedName("data") val data: T?,

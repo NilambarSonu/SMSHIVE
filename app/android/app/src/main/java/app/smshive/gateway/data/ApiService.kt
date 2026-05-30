@@ -13,14 +13,14 @@ interface ApiService {
     suspend fun registerDevice(
         @Header("x-api-key") apiKey: String,
         @Body request: DeviceRegisterRequest
-    ): ApiResponse<Any>
+    ): ApiResponse<DeviceRegisterResponse>
 
     @POST("api/v1/devices/{id}/heartbeat")
     suspend fun sendHeartbeat(
         @Path("id") deviceId: String,
         @Header("x-api-key") apiKey: String,
         @Body request: HeartbeatRequest
-    ): ApiResponse<Any>
+    ): ApiResponse<HeartbeatData>
 
     @GET("api/v1/gateway/devices/{id}/pending-sms")
     suspend fun getPendingSms(
@@ -43,7 +43,7 @@ interface ApiService {
     ): ApiResponse<Any>
 
     companion object {
-        fun create(baseUrl: String): ApiService {
+        fun create(baseUrl: String, clerkToken: String? = null): ApiService {
             val logging = HttpLoggingInterceptor().apply {
                 level = HttpLoggingInterceptor.Level.BASIC
             }
@@ -53,9 +53,16 @@ interface ApiService {
                 .readTimeout(30, TimeUnit.SECONDS)
                 .writeTimeout(30, TimeUnit.SECONDS)
                 .addInterceptor(logging)
+                .addInterceptor { chain ->
+                    val original = chain.request()
+                    val builder = original.newBuilder()
+                    if (clerkToken != null) {
+                        builder.addHeader("Authorization", "Bearer $clerkToken")
+                    }
+                    chain.proceed(builder.build())
+                }
                 .build()
 
-            // Normalize base url
             val normalizedUrl = if (baseUrl.endsWith("/")) baseUrl else "$baseUrl/"
 
             return Retrofit.Builder()

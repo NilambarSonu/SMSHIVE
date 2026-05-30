@@ -12,24 +12,42 @@ android {
         applicationId = "app.smshive.gateway"
         minSdk = 26
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 2
+        versionName = "2.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
         }
+        buildConfigField("String", "CLERK_PUBLISHABLE_KEY", "\"pk_test_bm9ibGUtcXVhZ2dhLTU1LmNsZXJrLmFjY291bnRzLmRldiQ\"")
+        buildConfigField("String", "SERVER_URL", "\"https://smshive.nilambarsonu.me\"")
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
+            signingConfig = signingConfigs.getByName("debug")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
         }
+        debug {
+            isMinifyEnabled = false
+        }
     }
+
+    // ABI split for smaller APK size
+    splits {
+        abi {
+            isEnable = true
+            reset()
+            include("arm64-v8a", "armeabi-v7a")
+            isUniversalApk = true
+        }
+    }
+
     lint {
         checkReleaseBuilds = false
         abortOnError = false
@@ -43,6 +61,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.8"
@@ -50,6 +69,8 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "META-INF/INDEX.LIST"
+            excludes += "META-INF/io.netty.versions.properties"
         }
     }
 }
@@ -66,16 +87,22 @@ dependencies {
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.material:material-icons-extended")
+    implementation("androidx.compose.animation:animation")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+    implementation("androidx.compose.runtime:runtime-livedata")
 
     // Navigation Compose
     implementation("androidx.navigation:navigation-compose:2.7.7")
 
-    // Retrofit & OkHttp
+    // Retrofit & OkHttp (OkHttp WebSocket replaces socket.io)
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+
+    // Encrypted Shared Preferences
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
 
     // Room Database
     implementation("androidx.room:room-runtime:2.6.1")
@@ -85,15 +112,17 @@ dependencies {
     // WorkManager
     implementation("androidx.work:work-runtime-ktx:2.9.0")
 
-    // CameraX and ML Kit for QR scanning
+    // CameraX for QR scanning
     implementation("androidx.camera:camera-core:1.3.1")
     implementation("androidx.camera:camera-camera2:1.3.1")
     implementation("androidx.camera:camera-lifecycle:1.3.1")
     implementation("androidx.camera:camera-view:1.3.1")
+
+    // ML Kit Barcode Scanning
     implementation("com.google.mlkit:barcode-scanning:17.2.0")
 
-    // Socket.io Client
-    implementation("io.socket:socket.io-client:2.1.0")
+    // Accompanist (permissions)
+    implementation("com.google.accompanist:accompanist-permissions:0.34.0")
 
     // Testing
     testImplementation("junit:junit:4.13.2")
