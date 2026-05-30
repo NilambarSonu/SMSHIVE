@@ -4,6 +4,8 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Types } from 'mongoose';
+import { InjectQueue } from '@nestjs/bull';
+import type { Queue } from 'bull';
 import { SmsService } from '../sms/sms.service.js';
 import { DevicesService } from '../devices/devices.service.js';
 import { GatewayEvents } from './gateway.events.js';
@@ -18,6 +20,7 @@ export class GatewayService {
     private readonly smsService: SmsService,
     private readonly devicesService: DevicesService,
     private readonly gatewayEvents: GatewayEvents,
+    @InjectQueue('sms') private smsQueue: Queue,
   ) {}
 
   async sendSms(userId: string, deviceId: string, dto: SendSmsDto) {
@@ -36,13 +39,23 @@ export class GatewayService {
       `SMS created: ${(sms._id as object).toString()} for device ${deviceId}`,
     );
 
-    // Push via WebSocket for < 3s delivery
-    this.gatewayEvents.emitNewSms(deviceId, {
-      id: sms._id,
-      recipients: sms.recipients,
-      message: sms.message,
-      simSlot: sms.simSlot,
-    });
+    // Push to the Bull queue
+    await this.smsQueue.add(
+      {
+        deviceId,
+        phone: sms.recipients.join(','),
+        message: sms.message,
+        smsId: (sms._id as object).toString(),
+      },
+      {
+        removeOnComplete: true,
+        attempts: 3,
+        backoff: {
+          type: 'exponential',
+          delay: 2000,
+        },
+      }
+    );
 
     return sms;
   }
@@ -67,6 +80,26 @@ export class GatewayService {
     const successful = results
       .filter((r) => r.status === 'fulfilled')
       .map((r: any) => r.value);
+
+    // Queue successful creations
+    for (const sms of successful) {
+      await this.smsQueue.add(
+        {
+          deviceId: sms.deviceId,
+          phone: sms.recipients.join(','),
+          message: sms.message,
+          smsId: (sms._id as object).toString(),
+        },
+        {
+          removeOnComplete: true,
+          attempts: 3,
+          backoff: {
+            type: 'exponential',
+            delay: 2000,
+          },
+        }
+      );
+    }
 
     const failed = results
       .filter((r) => r.status === 'rejected')

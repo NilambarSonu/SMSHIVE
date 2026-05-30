@@ -26,12 +26,10 @@ export default () => ({
     port: parseInt(process.env.API_PORT || '8000', 10),
     corsOrigins: process.env.CORS_ORIGINS || 'http://localhost:3000',
   },
-  smtp: {
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.SMTP_PORT || '587', 10),
-    secure: process.env.SMTP_SECURE === 'true',
-    user: process.env.SMTP_USER || '',
-    pass: process.env.SMTP_PASS || '',
-    from: process.env.SMTP_FROM || 'noreply@smshive.app',
+  redis: {
+    url: process.env.REDIS_URL || 'redis://localhost:6379',
+  },
+  resend: {
+    apiKey: process.env.RESEND_API_KEY || '',
   },
 });

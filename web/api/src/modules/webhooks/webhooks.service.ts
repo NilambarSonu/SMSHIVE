@@ -5,6 +5,8 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
+import { InjectQueue } from '@nestjs/bull';
+import type { Queue } from 'bull';
 import { Webhook, WebhookDocument } from './schemas/webhook.schema.js';
 import { CreateWebhookDto } from './dto/create-webhook.dto.js';
 import { UpdateWebhookDto } from './dto/update-webhook.dto.js';
@@ -15,6 +17,7 @@ export class WebhooksService {
 
   constructor(
     @InjectModel(Webhook.name) private webhookModel: Model<WebhookDocument>,
+    @InjectQueue('webhooks') private webhooksQueue: Queue,
   ) {}
 
   async create(
@@ -76,6 +79,7 @@ export class WebhooksService {
     event: string,
     data: unknown,
     userId: string,
+    userEmail?: string,
   ): Promise<void> {
     const webhooks = await this.webhookModel
       .find({
@@ -86,12 +90,22 @@ export class WebhooksService {
       .exec();
 
     for (const webhook of webhooks) {
-      // Fire and forget — don't await
-      this.sendWebhookRequest(webhook, event, data).catch((err) => {
-        this.logger.error(
-          `Webhook ${(webhook._id as object).toString()} failed: ${err.message}`,
-        );
-      });
+      await this.webhooksQueue.add(
+        {
+          webhookId: (webhook._id as object).toString(),
+          event,
+          data,
+          userEmail,
+        },
+        {
+          attempts: 5,
+          backoff: {
+            type: 'exponential',
+            delay: 5000,
+          },
+          removeOnComplete: true,
+        },
+      );
     }
   }
 
@@ -107,76 +121,22 @@ export class WebhooksService {
     };
 
     try {
-      await this.sendWebhookRequest(webhook, 'test', testPayload);
-      return { success: true, message: 'Test webhook sent successfully' };
+      await this.webhooksQueue.add(
+        {
+          webhookId: (webhook._id as object).toString(),
+          event: 'test',
+          data: testPayload,
+        },
+        {
+          attempts: 1, // Don't retry test webhooks
+          removeOnComplete: true,
+        },
+      );
+      return { success: true, message: 'Test webhook queued successfully' };
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : 'Unknown error';
-      return { success: false, message: `Test webhook failed: ${message}` };
-    }
-  }
-
-  private async sendWebhookRequest(
-    webhook: WebhookDocument,
-    event: string,
-    data: unknown,
-  ): Promise<void> {
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
-
-    if (webhook.headers) {
-      for (const [key, value] of webhook.headers.entries()) {
-        headers[key] = value;
-      }
-    }
-
-    if (webhook.secret) {
-      headers['X-Webhook-Secret'] = webhook.secret;
-    }
-
-    const body = JSON.stringify({
-      event,
-      data,
-      timestamp: new Date().toISOString(),
-    });
-
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10000);
-
-    try {
-      const response = await fetch(webhook.url, {
-        method: webhook.method || 'POST',
-        headers,
-        body,
-        signal: controller.signal,
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      await this.webhookModel
-        .updateOne(
-          { _id: webhook._id },
-          {
-            $set: { lastTriggered: new Date(), failureCount: 0 },
-          },
-        )
-        .exec();
-    } catch (error) {
-      await this.webhookModel
-        .updateOne(
-          { _id: webhook._id },
-          {
-            $inc: { failureCount: 1 },
-            $set: { lastTriggered: new Date() },
-          },
-        )
-        .exec();
-      throw error;
-    } finally {
-      clearTimeout(timeout);
+      return { success: false, message: `Failed to queue test webhook: ${message}` };
     }
   }
 }

@@ -69,7 +69,8 @@ class AuthManager(context: Context) {
     suspend fun signIn(email: String, password: String): Result<String> = withContext(Dispatchers.IO) {
         try {
             // Step 1: Create sign-in attempt
-            val publishableKey = "pk_test_bm9ibGUtcXVhZ2dhLTU1LmNsZXJrLmFjY291bnRzLmRldiQ"
+            // IMPORTANT: Replace this with your actual Clerk Publishable Key (pk_test_... or pk_live_...)
+            val publishableKey = "pk_test_YOUR_CLERK_PUBLISHABLE_KEY_HERE"
             val frontendApiBase = decodeFrontendApi(publishableKey)
 
             val createBody = gson.toJson(mapOf(

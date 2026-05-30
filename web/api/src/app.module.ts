@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ScheduleModule } from '@nestjs/schedule';
+import { BullModule } from '@nestjs/bull';
 
 import configuration from './config/configuration.js';
 import { AppController } from './app.controller.js';
@@ -18,6 +19,7 @@ import { ApiKeysModule } from './modules/api-keys/api-keys.module.js';
 import { ScheduledModule } from './modules/scheduled/scheduled.module.js';
 import { ContactsModule } from './modules/contacts/contacts.module.js';
 import { AnalyticsModule } from './modules/analytics/analytics.module.js';
+import { EmailsModule } from './modules/emails/emails.module.js';
 
 @Module({
   imports: [
@@ -32,6 +34,13 @@ import { AnalyticsModule } from './modules/analytics/analytics.module.js';
         uri: configService.get<string>('database.uri'),
       }),
     }),
+    BullModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        redis: configService.get<string>('redis.url'),
+      }),
+    }),
     ScheduleModule.forRoot(),
     UsersModule,
     AuthModule,
@@ -44,6 +53,7 @@ import { AnalyticsModule } from './modules/analytics/analytics.module.js';
     ScheduledModule,
     ContactsModule,
     AnalyticsModule,
+    EmailsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
