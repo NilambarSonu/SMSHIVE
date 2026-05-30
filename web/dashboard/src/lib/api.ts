@@ -2,7 +2,12 @@
 // SMSHIVE — API Client (Clerk-powered)
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+// Use relative URL in browser to leverage Next.js rewrites (/api/* → backend)
+// This avoids CORS issues when the backend is on a different port.
+// Only fall back to the full URL in SSR context.
+const API_BASE = typeof window !== 'undefined'
+  ? ''
+  : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000');
 
 interface ApiOptions extends RequestInit {
   params?: Record<string, string | number | boolean | undefined>;
@@ -38,13 +43,20 @@ class ApiClient {
   }
 
   private buildUrl(path: string, params?: Record<string, string | number | boolean | undefined>): string {
-    const url = new URL(`${this.baseUrl}${path}`);
+    // When baseUrl is empty (browser), use window.location.origin for URL parsing
+    // but return relative path so fetch goes through Next.js rewrites
+    const base = this.baseUrl || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000');
+    const url = new URL(`${base}${path}`);
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
         if (value !== undefined) {
           url.searchParams.set(key, String(value));
         }
       });
+    }
+    // Return relative URL when using browser (no baseUrl) to leverage Next.js rewrites
+    if (!this.baseUrl) {
+      return `${url.pathname}${url.search}`;
     }
     return url.toString();
   }
@@ -63,10 +75,16 @@ class ApiClient {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    const response = await fetch(url, {
-      ...fetchOptions,
-      headers,
-    });
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        ...fetchOptions,
+        headers,
+      });
+    } catch (err: any) {
+      // Network-level errors: ECONNREFUSED, DNS failure, offline, etc.
+      throw new ApiError(0, 'Unable to connect to the server. Please check if the backend is running.');
+    }
 
     if (response.status === 401) {
       // Clerk handles session refresh automatically.
@@ -75,6 +93,10 @@ class ApiClient {
         window.location.href = '/sign-in';
       }
       throw new ApiError(401, 'Session expired. Please sign in again.');
+    }
+
+    if (response.status === 502 || response.status === 503) {
+      throw new ApiError(response.status, 'Backend service is temporarily unavailable. Please try again later.');
     }
 
     if (!response.ok) {

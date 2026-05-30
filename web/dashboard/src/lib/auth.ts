@@ -75,7 +75,7 @@ export function useSyncUser() {
         const token = await getToken();
         if (!token) return;
 
-        await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/auth/me`, {
+        await fetch('/api/auth/me', {
           headers: {
             Authorization: `Bearer ${token}`,
           },

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { ThemeProvider } from '@/components/shared/ThemeProvider';
-import { Toaster } from 'sonner';
+import { SonnerToaster } from '@/components/shared/SonnerToaster';
 import { ClerkProvider } from '@clerk/nextjs';
 import { dark } from '@clerk/themes';
 
@@ -67,20 +67,10 @@ export default function RootLayout({
         <head>
           <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         </head>
-        <body className="min-h-screen bg-background font-sans antialiased">
+        <body className="min-h-screen bg-background font-sans antialiased" suppressHydrationWarning>
           <ThemeProvider>
             {children}
-            <Toaster
-              theme="dark"
-              position="bottom-right"
-              toastOptions={{
-                style: {
-                  background: 'hsl(var(--card))',
-                  border: '1px solid hsl(var(--border))',
-                  color: 'hsl(var(--foreground))',
-                },
-              }}
-            />
+            <SonnerToaster />
           </ThemeProvider>
         </body>
       </html>

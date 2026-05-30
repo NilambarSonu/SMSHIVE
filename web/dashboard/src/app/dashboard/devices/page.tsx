@@ -114,7 +114,7 @@ export default function DevicesPage() {
     };
 
     fetchApiKey();
-    setServerUrl(window.location.origin.replace('3000', '8000')); // default API port
+    setServerUrl(process.env.NEXT_PUBLIC_API_URL || window.location.origin.replace('3000', '8000')); // API server URL for mobile app
   }, []);
 
   // Fetch QR Token on modal open
