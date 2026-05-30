@@ -451,7 +451,7 @@ class SmsGatewayForegroundService : Service() {
             .setContentIntent(mainIntent)
             .addAction(android.R.drawable.ic_media_pause, "Pause", pauseIntent)
             .addAction(android.R.drawable.ic_menu_close_clear_cancel, "Stop", stopIntent)
-            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setPriority(NotificationCompat.PRIORITY_MIN)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .build()
     }
@@ -466,7 +466,7 @@ class SmsGatewayForegroundService : Service() {
             val channel = NotificationChannel(
                 CHANNEL_ID,
                 "SMSHIVE Gateway Service",
-                NotificationManager.IMPORTANCE_LOW
+                NotificationManager.IMPORTANCE_MIN
             ).apply {
                 description = "Persistent notification for SMSHIVE gateway status"
                 setShowBadge(false)

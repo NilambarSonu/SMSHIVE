@@ -218,6 +218,71 @@ fun DashboardTab(
             }
         }
 
+        // ── Clean Notification Bar Pro-Tip ──────────────────
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1A3C)),
+                border = BorderStroke(1.dp, Color(0xFF6C63FF).copy(alpha = 0.4f))
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = null,
+                            tint = Color(0xFF8B5CF6),
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "✨ Pro-Tip: Hide Service Notification",
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 13.sp
+                        )
+                    }
+                    Text(
+                        text = "Android requires a status bar notification to run background services. To hide this notification completely and keep a perfectly clean status bar without stopping the gateway, click 'Configure Settings' below and toggle off ONLY the 'SMSHIVE Gateway Service' channel. Do not disable global app notifications!",
+                        color = Color(0xFFC7D2FE),
+                        fontSize = 11.sp,
+                        lineHeight = 15.sp
+                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(38.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(Color(0xFF6C63FF))
+                            .clickable {
+                                try {
+                                    val intent = android.content.Intent().apply {
+                                        action = android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS
+                                        putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, context.packageName)
+                                    }
+                                    context.startActivity(intent)
+                                } catch (e: Exception) {
+                                    e.printStackTrace()
+                                }
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Configure Settings -> Hide Notification",
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.sp
+                        )
+                    }
+                }
+            }
+        }
+
         // ── Status Card ────────────────────────────────────────
         item {
             Card(
