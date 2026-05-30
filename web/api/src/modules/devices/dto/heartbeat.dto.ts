@@ -16,10 +16,12 @@ class SimInfoDto {
   slot: number;
 
   @IsString()
-  carrier: string;
+  @IsOptional()
+  carrier?: string;
 
   @IsString()
-  phoneNumber: string;
+  @IsOptional()
+  phoneNumber?: string;
 
   @IsBoolean()
   active: boolean;

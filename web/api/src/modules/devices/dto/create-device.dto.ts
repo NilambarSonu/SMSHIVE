@@ -14,13 +14,15 @@ class SimInfoDto {
   @IsNumber()
   slot: number;
 
-  @ApiProperty({ example: 'AT&T' })
+  @ApiProperty({ example: 'AT&T', required: false })
   @IsString()
-  carrier: string;
+  @IsOptional()
+  carrier?: string;
 
-  @ApiProperty({ example: '+1234567890' })
+  @ApiProperty({ example: '+1234567890', required: false })
   @IsString()
-  phoneNumber: string;
+  @IsOptional()
+  phoneNumber?: string;
 
   @ApiProperty({ example: true })
   @IsBoolean()
