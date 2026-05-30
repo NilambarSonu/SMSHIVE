@@ -24,7 +24,7 @@ export class AuthController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get current authenticated user (syncs from Clerk)' })
   async me(
-    @CurrentUser('userId') clerkId: string,
+    @CurrentUser('clerkId') clerkId: string,
     @CurrentUser('email') email: string,
   ) {
     // Auto-sync user from Clerk to local DB on each /me call
@@ -38,7 +38,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Explicitly sync Clerk user to local database' })
   async syncUser(
-    @CurrentUser('userId') clerkId: string,
+    @CurrentUser('clerkId') clerkId: string,
     @CurrentUser('email') email: string,
     @Body() body: { name?: string },
   ) {
