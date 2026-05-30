@@ -107,6 +107,11 @@ fun DashboardTab(
 
     val successPct = if (sentToday > 0) (deliveredToday * 100) / sentToday else 0
 
+    val isXiaomi = remember {
+        val man = android.os.Build.MANUFACTURER.lowercase(java.util.Locale.getDefault())
+        man.contains("xiaomi") || man.contains("redmi") || man.contains("poco")
+    }
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -143,6 +148,72 @@ fun DashboardTab(
                 }
                 IconButton(onClick = { /* Settings navigation placeholder */ }) {
                     Icon(Icons.Default.Settings, contentDescription = "Settings", tint = BrandMuted)
+                }
+            }
+        }
+
+        // ── Xiaomi/HyperOS Permission Warning ──────────────────
+        if (isXiaomi) {
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF2C1B1B)),
+                    border = BorderStroke(1.dp, Color(0xFFDC2626))
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.Warning,
+                                contentDescription = null,
+                                tint = Color(0xFFF87171),
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Xiaomi/HyperOS Action Required",
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 13.sp
+                            )
+                        }
+                        Text(
+                            text = "MIUI/HyperOS strictly blocks background SMS sending by default. You MUST enable this permission manually to send SMS OTPs.",
+                            color = Color(0xFFFCA5A5),
+                            fontSize = 11.sp,
+                            lineHeight = 15.sp
+                        )
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(38.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(Color(0xFFDC2626))
+                                .clickable {
+                                    try {
+                                        val intent = android.content.Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                                            data = android.net.Uri.parse("package:" + context.packageName)
+                                        }
+                                        context.startActivity(intent)
+                                    } catch (e: Exception) {
+                                        e.printStackTrace()
+                                    }
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Enable 'Other Permissions' -> 'Send SMS'",
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 12.sp
+                            )
+                        }
+                    }
                 }
             }
         }

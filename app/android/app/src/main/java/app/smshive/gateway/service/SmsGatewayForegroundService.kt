@@ -117,7 +117,8 @@ class SmsGatewayForegroundService : Service() {
         if (prefs.serverUrl.isEmpty() || prefs.deviceId.isEmpty()) return
         try {
             val client = okhttp3.OkHttpClient()
-            val wsUrl = prefs.serverUrl.replace("https://", "wss://").replace("http://", "ws://")
+            val baseUrl = prefs.serverUrl.trimEnd('/')
+            val wsUrl = "$baseUrl/api/ws".replace("https://", "wss://").replace("http://", "ws://")
             val request = okhttp3.Request.Builder().url(wsUrl).build()
             webSocket = client.newWebSocket(request, object : WebSocketListener() {
                 override fun onOpen(webSocket: WebSocket, response: Response) {
@@ -178,7 +179,15 @@ class SmsGatewayForegroundService : Service() {
                 else -> prefs.simPreference
             }
             val subId = getSubscriptionIdForSlot(simSlot)
-            val smsManager = if (subId != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+            
+            val smsManager = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                val systemSmsManager = context.getSystemService(SmsManager::class.java)
+                if (subId != null) {
+                    systemSmsManager.createForSubscriptionId(subId)
+                } else {
+                    systemSmsManager
+                }
+            } else if (subId != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
                 SmsManager.getSmsManagerForSubscriptionId(subId)
             } else {
                 @Suppress("DEPRECATION")
@@ -229,14 +238,20 @@ class SmsGatewayForegroundService : Service() {
                     )
                 } catch (e: Exception) {
                     e.printStackTrace()
-                    val localId = db.smsDao().insertSent(
+                    
+                    var errorMsg = e.message ?: "Unknown error"
+                    if (errorMsg.contains("SEND_SMS") || errorMsg.contains("permission")) {
+                        errorMsg = "MIUI background SMS permission blocked. Go to Settings -> Apps -> Manage Apps -> SMSHIVE Gateway -> Other Permissions -> Send SMS -> Set to 'Always Allow'."
+                    }
+
+                    db.smsDao().insertSent(
                         SentMessage(
                             recipient = recipient,
                             message = sms.message,
                             status = "FAILED",
                             sentAt = System.currentTimeMillis(),
                             simSlot = simSlot,
-                            errorMessage = e.message,
+                            errorMessage = errorMsg,
                             retryCount = retryCount,
                             serverSmsId = smsId
                         )
@@ -247,7 +262,7 @@ class SmsGatewayForegroundService : Service() {
                         sendSms(sms, retryCount + 1)
                     } else {
                         try {
-                            api.updateSmsStatus(smsId, prefs.apiKey, StatusUpdateRequest("FAILED", e.message))
+                            api.updateSmsStatus(smsId, prefs.apiKey, StatusUpdateRequest("FAILED", errorMsg))
                         } catch (ex: Exception) { ex.printStackTrace() }
                     }
                 }

@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { WsAdapter } from '@nestjs/platform-ws';
 import { AppModule } from './app.module.js';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor.js';
 
@@ -14,6 +15,9 @@ async function bootstrap() {
 
   // Global prefix
   app.setGlobalPrefix('api');
+
+  // Enable raw WebSockets adapter
+  app.useWebSocketAdapter(new WsAdapter(app));
 
   // Enable CORS
   app.enableCors({

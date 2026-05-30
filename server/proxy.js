@@ -63,7 +63,7 @@ const server = http.createServer((req, res) => {
 server.on('upgrade', (req, socket, head) => {
   const url = req.url || '/';
 
-  if (url.startsWith('/socket.io')) {
+  if (url.startsWith('/socket.io') || url.startsWith('/api')) {
     apiProxy.ws(req, socket, head);
   } else {
     dashboardProxy.ws(req, socket, head);
