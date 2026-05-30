@@ -18,6 +18,7 @@ import { UpdateDeviceDto } from './dto/update-device.dto.js';
 import { HeartbeatDto } from './dto/heartbeat.dto.js';
 
 import { ApiKeyGuard } from '../../common/guards/api-key.guard.js';
+import { DeviceAuthGuard } from '../../common/guards/device-auth.guard.js';
 
 @ApiTags('Devices')
 @ApiBearerAuth()
@@ -50,7 +51,7 @@ export class DevicesController {
   }
 
   @Post('register')
-  @UseGuards(ApiKeyGuard)
+  @UseGuards(DeviceAuthGuard)
   @ApiOperation({ summary: 'Register a new device' })
   async register(
     @CurrentUser('userId') userId: string,

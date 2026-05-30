@@ -184,12 +184,12 @@ export class DevicesService {
     });
     await qrTokenDoc.save();
 
-    const apiKeys = await this.apiKeysService.findAllByUser(userId);
-    let apiKeyStr: string | undefined = undefined;
-    if (apiKeys.length === 0) {
-      const result = await this.apiKeysService.generateKey(userId, { name: 'Android Gateway App', scopes: ['send_sms', 'receive_sms', 'manage_devices'] });
-      apiKeyStr = result.rawKey;
-    }
+    // Always generate a fresh raw API key for QR setup to guarantee a working key is embedded in the code
+    const result = await this.apiKeysService.generateKey(userId, {
+      name: `Android Gateway (${new Date().toLocaleDateString()})`,
+      scopes: ['send_sms', 'receive_sms', 'manage_devices']
+    });
+    const apiKeyStr = result.rawKey;
 
     return { qrToken: token, expiresAt, apiKey: apiKeyStr };
   }
