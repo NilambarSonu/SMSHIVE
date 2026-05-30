@@ -20,6 +20,25 @@ export function EmptyState({
   onAction, 
   className 
 }: EmptyStateProps) {
+  // Determine how to render the icon
+  const renderIcon = () => {
+    if (!Icon) return null;
+    
+    // If it's already a React element (e.g., <Key size={24} />)
+    if (React.isValidElement(Icon)) {
+      return Icon;
+    }
+    
+    // If it's a component (function or object with render/$$typeof, e.g., Lucide component)
+    if (typeof Icon === 'function' || (typeof Icon === 'object' && (Icon as any).$$typeof)) {
+      const IconComponent = Icon as any;
+      return <IconComponent size={32} />;
+    }
+    
+    // Fallback: render as is
+    return Icon;
+  };
+
   return (
     <div
       className={cn(
@@ -28,7 +47,7 @@ export function EmptyState({
       )}
     >
       <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-muted/50 text-muted-foreground mb-4">
-        {typeof Icon === 'function' ? <Icon size={32} /> : Icon}
+        {renderIcon()}
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-1">{title}</h3>
       <p className="text-sm text-muted-foreground max-w-sm mb-6">{description}</p>

@@ -39,7 +39,19 @@ export class GatewayService {
       `SMS created: ${(sms._id as object).toString()} for device ${deviceId}`,
     );
 
-    // Push to the Bull queue
+    // Always emit instantly via WebSocket for sub-second real-time delivery
+    try {
+      this.gatewayEvents.emitNewSms(deviceId, {
+        id: (sms._id as object).toString(),
+        recipients: sms.recipients,
+        message: sms.message,
+        simSlot: sms.simSlot,
+      });
+    } catch (wsErr: any) {
+      this.logger.warn(`WebSocket immediate emit failed: ${wsErr.message}`);
+    }
+
+    // Push to the Bull queue as background backup/retry
     try {
       await this.smsQueue.add(
         {
@@ -59,14 +71,6 @@ export class GatewayService {
       );
     } catch (err: any) {
       this.logger.warn(`Failed to push SMS to Bull queue (Redis offline/missing): ${err.message}`);
-      // Fallback: Attempt to notify the device directly via WebSocket if connected
-      try {
-        this.gatewayEvents.emitNewSms(deviceId, {
-          id: (sms._id as object).toString(),
-          recipients: sms.recipients,
-          message: sms.message,
-        });
-      } catch (wsErr) {}
     }
 
     return sms;
@@ -74,7 +78,7 @@ export class GatewayService {
 
   async bulkSend(
     userId: string,
-    messages: { deviceId: string; recipients: string[]; message: string }[],
+    messages: { deviceId: string; recipients: string[]; message: string; simSlot?: number }[],
   ) {
     const results = await Promise.allSettled(
       messages.map((msg) =>
@@ -83,6 +87,7 @@ export class GatewayService {
           deviceId: msg.deviceId,
           recipients: msg.recipients,
           message: msg.message,
+          simSlot: msg.simSlot,
           status: 'pending',
           type: 'outgoing',
         }),
@@ -93,7 +98,21 @@ export class GatewayService {
       .filter((r) => r.status === 'fulfilled')
       .map((r: any) => r.value);
 
-    // Queue successful creations
+    // Emit instantly via WebSocket for all successful creations
+    for (const sms of successful) {
+      try {
+        this.gatewayEvents.emitNewSms(sms.deviceId, {
+          id: (sms._id as object).toString(),
+          recipients: sms.recipients,
+          message: sms.message,
+          simSlot: sms.simSlot,
+        });
+      } catch (wsErr: any) {
+        this.logger.warn(`WebSocket immediate emit for bulk SMS failed: ${wsErr.message}`);
+      }
+    }
+
+    // Queue successful creations in Bull
     for (const sms of successful) {
       try {
         await this.smsQueue.add(
@@ -113,14 +132,7 @@ export class GatewayService {
           }
         );
       } catch (err: any) {
-        this.logger.warn(`Failed to push SMS to Bull queue (Redis offline/missing): ${err.message}`);
-        try {
-          this.gatewayEvents.emitNewSms(sms.deviceId, {
-            id: (sms._id as object).toString(),
-            recipients: sms.recipients,
-            message: sms.message,
-          });
-        } catch (wsErr) {}
+        this.logger.warn(`Failed to push bulk SMS to Bull queue: ${err.message}`);
       }
     }
 

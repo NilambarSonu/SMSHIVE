@@ -13,6 +13,8 @@ import {
   Clock,
   AlertTriangle,
   RefreshCw,
+  Code2,
+  Terminal,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
@@ -49,6 +51,91 @@ export default function ApiKeysPage() {
   const [rateLimit, setRateLimit] = useState(100);
   const [selectedScopes, setSelectedScopes] = useState<string[]>(['send_sms']);
   const [creating, setCreating] = useState(false);
+
+  // Integration Snippets State
+  const [activeTab, setActiveTab] = useState<'curl' | 'js' | 'python' | 'php'>('curl');
+  const [integrationDeviceId, setIntegrationDeviceId] = useState('YOUR_DEVICE_ID');
+  const [integrationApiKey, setIntegrationApiKey] = useState('YOUR_API_KEY');
+  const [copiedIntegration, setCopiedIntegration] = useState(false);
+
+  const codeSnippets = {
+    curl: `curl -X POST "https://smshive.nilambarsonu.me/api/v1/gateway/devices/${integrationDeviceId}/send-sms" \\
+  -H "Content-Type: application/json" \\
+  -H "x-api-key: ${integrationApiKey}" \\
+  -d '{
+    "recipients": ["+919937879162"],
+    "message": "Your OTP verification code is: 482910. Powered by SMSHIVE.",
+    "simSlot": 0
+  }'`,
+    js: `// Install dependencies if needed: npm install
+const sendSMS = async () => {
+  const response = await fetch("https://smshive.nilambarsonu.me/api/v1/gateway/devices/${integrationDeviceId}/send-sms", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": "${integrationApiKey}"
+    },
+    body: JSON.stringify({
+      recipients: ["+919937879162"],
+      message: "Your OTP verification code is: 482910. Powered by SMSHIVE.",
+      simSlot: 0
+    })
+  });
+
+  const result = await response.json();
+  console.log(result);
+};
+
+sendSMS();`,
+    python: `import requests
+
+url = "https://smshive.nilambarsonu.me/api/v1/gateway/devices/${integrationDeviceId}/send-sms"
+headers = {
+    "Content-Type": "application/json",
+    "x-api-key": "${integrationApiKey}"
+}
+payload = {
+    "recipients": ["+919937879162"],
+    "message": "Your OTP verification code is: 482910. Powered by SMSHIVE.",
+    "simSlot": 0
+}
+
+response = requests.post(url, json=payload, headers=headers)
+print(response.json())`,
+    php: `<?php
+$curl = curl_init();
+
+curl_setopt_array($curl, [
+  CURLOPT_URL => "https://smshive.nilambarsonu.me/api/v1/gateway/devices/${integrationDeviceId}/send-sms",
+  CURLOPT_RETURNTRANSFER => true,
+  CURLOPT_ENCODING => "",
+  CURLOPT_MAXREDIRS => 10,
+  CURLOPT_TIMEOUT => 30,
+  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+  CURLOPT_CUSTOMREQUEST => "POST",
+  CURLOPT_POSTFIELDS => json_encode([
+    "recipients" => ["+919937879162"],
+    "message" => "Your OTP verification code is: 482910. Powered by SMSHIVE.",
+    "simSlot" => 0
+  ]),
+  CURLOPT_HTTPHEADER => [
+    "Content-Type: application/json",
+    "x-api-key: ${integrationApiKey}"
+  ],
+]);
+
+$response = curl_exec($curl);
+$err = curl_error($curl);
+
+curl_close($curl);
+
+if ($err) {
+  echo "cURL Error #:" . $err;
+} else {
+  echo $response;
+}
+`
+  };
 
   const fetchApiKeys = async (silent = false) => {
     if (!silent) setLoading(true);
@@ -93,7 +180,9 @@ export default function ApiKeysPage() {
       });
 
       if (response?.data) {
-        setNewKeyRevealed(response.data.key || 'key-not-returned');
+        const generatedKey = response.data.key || 'key-not-returned';
+        setNewKeyRevealed(generatedKey);
+        setIntegrationApiKey(generatedKey);
         toast.success('API Key generated successfully');
         fetchApiKeys(true);
       }
@@ -245,6 +334,93 @@ export default function ApiKeysPage() {
           ))}
         </div>
       )}
+
+      {/* Dynamic API Integration Guide Card */}
+      <div className="glass-card p-6 border-border mt-8 stagger-item">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <Code2 size={20} />
+          </div>
+          <div>
+            <h2 className="text-lg font-display font-bold text-white">API Integration Guide</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">Copy-paste code to integrate SMS OTP verification into any application.</p>
+          </div>
+        </div>
+
+        {/* Inputs row */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block mb-1.5">
+              Device ID
+            </label>
+            <input
+              type="text"
+              value={integrationDeviceId}
+              onChange={(e) => setIntegrationDeviceId(e.target.value)}
+              placeholder="YOUR_DEVICE_ID"
+              className="w-full rounded-lg border border-border bg-muted/20 px-3.5 py-2.5 text-sm outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all font-mono text-white"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block mb-1.5">
+              API Key
+            </label>
+            <input
+              type="text"
+              value={integrationApiKey}
+              onChange={(e) => setIntegrationApiKey(e.target.value)}
+              placeholder="YOUR_API_KEY"
+              className="w-full rounded-lg border border-border bg-muted/20 px-3.5 py-2.5 text-sm outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all font-mono text-white"
+            />
+          </div>
+        </div>
+
+        {/* Tab Headers */}
+        <div className="flex border-b border-border mb-4 overflow-x-auto scrollbar-none">
+          {(['curl', 'js', 'python', 'php'] as const).map((tab) => {
+            const labels = { curl: 'cURL', js: 'JavaScript', python: 'Python', php: 'PHP' };
+            return (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`py-2.5 px-4 text-sm font-semibold border-b-2 transition-all relative ${
+                  activeTab === tab
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {labels[tab]}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Code Panel */}
+        <div className="relative rounded-lg overflow-hidden border border-border bg-muted/15 font-mono text-xs select-all text-white p-4">
+          <button
+            onClick={async () => {
+              await copyToClipboard(codeSnippets[activeTab]);
+              setCopiedIntegration(true);
+              toast.success('Snippet copied to clipboard');
+              setTimeout(() => setCopiedIntegration(false), 2000);
+            }}
+            className="absolute right-3 top-3 h-8 px-3 rounded bg-primary text-white text-xs font-semibold flex items-center gap-1.5 hover:bg-primary/95 hover:scale-[1.02] active:scale-[0.98] transition-all select-none z-10"
+          >
+            {copiedIntegration ? (
+              <>
+                <Check size={12} /> Copied!
+              </>
+            ) : (
+              <>
+                <Copy size={12} /> Copy Code
+              </>
+            )}
+          </button>
+          <pre className="overflow-x-auto whitespace-pre pr-24 max-h-[300px] leading-relaxed select-text font-mono text-muted-foreground selection:bg-primary/30">
+            {codeSnippets[activeTab]}
+          </pre>
+        </div>
+      </div>
 
       {/* Create Key Modal */}
       {showCreateModal && (

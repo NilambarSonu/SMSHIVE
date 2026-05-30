@@ -47,13 +47,13 @@ export class SmsService {
   }
 
   async findPendingOrStuckQueued(deviceId: string, limit = 50) {
-    const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000);
+    const fiveSecondsAgo = new Date(Date.now() - 5 * 1000);
 
     return this.smsModel.find({
       deviceId,
       $or: [
         { status: 'pending' },
-        { status: 'queued', updatedAt: { $lt: twoMinutesAgo } },
+        { status: 'queued', updatedAt: { $lt: fiveSecondsAgo } },
       ],
       type: 'outgoing',
     }).limit(limit).exec();

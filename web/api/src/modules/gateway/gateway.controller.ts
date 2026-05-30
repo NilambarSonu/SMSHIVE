@@ -11,7 +11,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
+import { DeviceAuthGuard } from '../../common/guards/device-auth.guard.js';
 import { ApiKeyGuard } from '../../common/guards/api-key.guard.js';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
 import { GatewayService } from './gateway.service.js';
@@ -24,7 +24,7 @@ export class GatewayController {
   constructor(private readonly gatewayService: GatewayService) {}
 
   @Post('v1/gateway/devices/:id/send-sms')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(DeviceAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Send SMS via a specific device' })
   async sendSms(
@@ -36,7 +36,7 @@ export class GatewayController {
   }
 
   @Post('v1/gateway/bulk-send')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(DeviceAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Send SMS to multiple devices in bulk' })
   async bulkSend(
@@ -50,7 +50,7 @@ export class GatewayController {
   }
 
   @Get('v1/gateway/devices/:id/get-received-sms')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(DeviceAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get received SMS for a device' })
   @ApiQuery({ name: 'page', required: false, type: Number })
