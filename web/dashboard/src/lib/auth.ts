@@ -15,6 +15,10 @@ import { api } from './api';
 export function useApiAuth() {
   const { getToken } = useAuth();
 
+  // Set synchronously during render so child components have access
+  // to the token getter when their useEffects run (bottom-up order).
+  api.setTokenGetter(getToken);
+
   useEffect(() => {
     api.setTokenGetter(getToken);
   }, [getToken]);
