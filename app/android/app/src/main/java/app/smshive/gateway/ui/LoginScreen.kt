@@ -54,6 +54,7 @@ import app.smshive.gateway.ui.theme.DarkCard
 import app.smshive.gateway.ui.theme.DestructiveRed
 import app.smshive.gateway.ui.theme.TextPrimary
 import app.smshive.gateway.ui.theme.TextSecondary
+import androidx.compose.ui.text.style.TextAlign
 import kotlinx.coroutines.launch
 
 @Composable
@@ -66,6 +67,8 @@ fun LoginScreen(
     var passwordVisible by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
+    var showVerificationCodeField by remember { mutableStateOf(false) }
+    var verificationCode by remember { mutableStateOf("") }
     val coroutineScope = rememberCoroutineScope()
 
     Box(
@@ -142,7 +145,7 @@ fun LoginScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Welcome back",
+                    text = if (showVerificationCodeField) "Verify Your Device" else "Welcome back",
                     color = TextPrimary,
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold
@@ -151,62 +154,85 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(6.dp))
 
                 Text(
-                    text = "Sign in to your SMSHIVE account",
+                    text = if (showVerificationCodeField) "A 6-digit verification code has been sent to your email." else "Sign in to your SMSHIVE account",
                     color = TextSecondary,
-                    fontSize = 14.sp
+                    fontSize = 14.sp,
+                    textAlign = TextAlign.Center
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Email Field
-                OutlinedTextField(
-                    value = email,
-                    onValueChange = { email = it },
-                    label = { Text("Email", color = BrandMuted) },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = BrandViolet,
-                        unfocusedBorderColor = DarkBorder,
-                        focusedLabelColor = BrandViolet,
-                        unfocusedLabelColor = BrandMuted,
-                        cursorColor = BrandViolet,
-                        focusedTextColor = TextPrimary,
-                        unfocusedTextColor = TextPrimary
-                    ),
-                    modifier = Modifier.fillMaxWidth()
-                )
+                if (showVerificationCodeField) {
+                    // Verification Code Field
+                    OutlinedTextField(
+                        value = verificationCode,
+                        onValueChange = { verificationCode = it },
+                        label = { Text("Verification Code", color = BrandMuted) },
+                        placeholder = { Text("123456", color = BrandMuted) },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = BrandViolet,
+                            unfocusedBorderColor = DarkBorder,
+                            focusedLabelColor = BrandViolet,
+                            unfocusedLabelColor = BrandMuted,
+                            cursorColor = BrandViolet,
+                            focusedTextColor = TextPrimary,
+                            unfocusedTextColor = TextPrimary
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                } else {
+                    // Email Field
+                    OutlinedTextField(
+                        value = email,
+                        onValueChange = { email = it },
+                        label = { Text("Email", color = BrandMuted) },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = BrandViolet,
+                            unfocusedBorderColor = DarkBorder,
+                            focusedLabelColor = BrandViolet,
+                            unfocusedLabelColor = BrandMuted,
+                            cursorColor = BrandViolet,
+                            focusedTextColor = TextPrimary,
+                            unfocusedTextColor = TextPrimary
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                // Password Field
-                OutlinedTextField(
-                    value = password,
-                    onValueChange = { password = it },
-                    label = { Text("Password", color = BrandMuted) },
-                    singleLine = true,
-                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                    trailingIcon = {
-                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                            Icon(
-                                imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                                contentDescription = if (passwordVisible) "Hide password" else "Show password",
-                                tint = BrandMuted
-                            )
-                        }
-                    },
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = BrandViolet,
-                        unfocusedBorderColor = DarkBorder,
-                        focusedLabelColor = BrandViolet,
-                        unfocusedLabelColor = BrandMuted,
-                        cursorColor = BrandViolet,
-                        focusedTextColor = TextPrimary,
-                        unfocusedTextColor = TextPrimary
-                    ),
-                    modifier = Modifier.fillMaxWidth()
-                )
+                    // Password Field
+                    OutlinedTextField(
+                        value = password,
+                        onValueChange = { password = it },
+                        label = { Text("Password", color = BrandMuted) },
+                        singleLine = true,
+                        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                        trailingIcon = {
+                            IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                Icon(
+                                    imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                    contentDescription = if (passwordVisible) "Hide password" else "Show password",
+                                    tint = BrandMuted
+                                )
+                            }
+                        },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = BrandViolet,
+                            unfocusedBorderColor = DarkBorder,
+                            focusedLabelColor = BrandViolet,
+                            unfocusedLabelColor = BrandMuted,
+                            cursorColor = BrandViolet,
+                            focusedTextColor = TextPrimary,
+                            unfocusedTextColor = TextPrimary
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(24.dp))
 
@@ -222,7 +248,7 @@ fun LoginScreen(
                     )
                 }
 
-                // Sign In Button
+                // Sign In / Verify Button
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -239,19 +265,50 @@ fun LoginScreen(
                         onClick = {
                             if (!isLoading) {
                                 errorMessage = ""
-                                isLoading = true
-                                coroutineScope.launch {
-                                    try {
-                                        val successResult = authManager.signIn(email.trim(), password)
-                                        if (successResult.isSuccess) {
-                                            onSuccess()
-                                        } else {
-                                            errorMessage = successResult.exceptionOrNull()?.message ?: "Invalid email or password."
+                                if (showVerificationCodeField) {
+                                    if (verificationCode.isBlank()) {
+                                        errorMessage = "Please enter the verification code."
+                                        return@Button
+                                    }
+                                    isLoading = true
+                                    coroutineScope.launch {
+                                        try {
+                                            val verifyResult = authManager.verifyEmailCode(verificationCode)
+                                            if (verifyResult.isSuccess) {
+                                                onSuccess()
+                                            } else {
+                                                errorMessage = verifyResult.exceptionOrNull()?.message ?: "Verification failed."
+                                            }
+                                        } catch (e: Exception) {
+                                            errorMessage = e.message ?: "Verification failed. Please try again."
+                                        } finally {
+                                            isLoading = false
                                         }
-                                    } catch (e: Exception) {
-                                        errorMessage = e.message ?: "Sign in failed. Please try again."
-                                    } finally {
-                                        isLoading = false
+                                    }
+                                } else {
+                                    if (email.isBlank() || password.isBlank()) {
+                                        errorMessage = "Email and password are required."
+                                        return@Button
+                                    }
+                                    isLoading = true
+                                    coroutineScope.launch {
+                                        try {
+                                            val successResult = authManager.signIn(email.trim(), password)
+                                            if (successResult.isSuccess) {
+                                                onSuccess()
+                                            } else {
+                                                val errMsg = successResult.exceptionOrNull()?.message ?: "Invalid email or password."
+                                                if (errMsg == "verification_code_required") {
+                                                    showVerificationCodeField = true
+                                                } else {
+                                                    errorMessage = errMsg
+                                                }
+                                            }
+                                        } catch (e: Exception) {
+                                            errorMessage = e.message ?: "Sign in failed. Please try again."
+                                        } finally {
+                                            isLoading = false
+                                        }
                                     }
                                 }
                             }
@@ -267,12 +324,30 @@ fun LoginScreen(
                             )
                         } else {
                             Text(
-                                text = "Sign In",
+                                text = if (showVerificationCodeField) "Verify & Sign In" else "Sign In",
                                 color = Color.White,
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.SemiBold
                             )
                         }
+                    }
+                }
+
+                if (showVerificationCodeField) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    androidx.compose.material3.TextButton(
+                        onClick = {
+                            showVerificationCodeField = false
+                            verificationCode = ""
+                            errorMessage = ""
+                        }
+                    ) {
+                        Text(
+                            text = "Back to Sign In",
+                            color = TextSecondary,
+                            fontSize = 14.sp
+                        )
                     }
                 }
             }
