@@ -12,14 +12,14 @@ android {
         applicationId = "app.smshive.gateway"
         minSdk = 26
         targetSdk = 34
-        versionCode = 2
-        versionName = "2.0.0"
+        versionCode = 3
+        versionName = "2.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
         }
-        buildConfigField("String", "CLERK_PUBLISHABLE_KEY", "\"pk_test_bm9ibGUtcXVhZ2dhLTU1LmNsZXJrLmFjY291bnRzLmRldiQ\"")
+        buildConfigField("String", "CLERK_PUBLISHABLE_KEY", "\"pk_live_Y2xlcmsuc21zaGl2ZS5uaWxhbWJhcnNvbnUubWUk\"")
         buildConfigField("String", "SERVER_URL", "\"https://smshive.nilambarsonu.me\"")
     }
 

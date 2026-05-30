@@ -70,7 +70,7 @@ class AuthManager(context: Context) {
         try {
             // Step 1: Create sign-in attempt
             // IMPORTANT: Replace this with your actual Clerk Publishable Key (pk_test_... or pk_live_...)
-            val publishableKey = "pk_test_YOUR_CLERK_PUBLISHABLE_KEY_HERE"
+            val publishableKey = "pk_live_Y2xlcmsuc21zaGl2ZS5uaWxhbWJhcnNvbnUubWUk"
             val frontendApiBase = decodeFrontendApi(publishableKey)
 
             val createBody = gson.toJson(mapOf(
