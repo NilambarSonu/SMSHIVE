@@ -20,17 +20,21 @@ const dashboardProxy = httpProxy.createProxyServer({ target: DASHBOARD_TARGET, w
 // Handle proxy errors gracefully (don't crash if backend isn't ready yet)
 apiProxy.on('error', (err, req, res) => {
   console.error(`[proxy] API proxy error: ${err.message}`);
-  if (res && !res.headersSent) {
+  if (res && res.writeHead && !res.headersSent) {
     res.writeHead(502, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ error: 'API service unavailable', code: 'PROXY_ERROR' }));
+  } else if (res && res.destroy) {
+    res.destroy();
   }
 });
 
 dashboardProxy.on('error', (err, req, res) => {
   console.error(`[proxy] Dashboard proxy error: ${err.message}`);
-  if (res && !res.headersSent) {
+  if (res && res.writeHead && !res.headersSent) {
     res.writeHead(502, { 'Content-Type': 'text/plain' });
     res.end('Dashboard service unavailable');
+  } else if (res && res.destroy) {
+    res.destroy();
   }
 });
 

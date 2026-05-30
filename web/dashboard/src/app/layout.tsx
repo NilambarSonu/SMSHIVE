@@ -27,17 +27,17 @@ export default function RootLayout({
       appearance={{
         baseTheme: dark,
         variables: {
-          colorPrimary: '#6C63FF',
+          colorPrimary: '#2563EB',
           colorTextOnPrimaryBackground: '#FFFFFF',
-          colorBackground: '#0A0A0F',
-          colorInputBackground: '#111118',
-          colorInputText: '#F0F0FF',
-          colorText: '#F0F0FF',
-          colorTextSecondary: '#6B7280',
+          colorBackground: '#0F172A',
+          colorInputBackground: '#1E293B',
+          colorInputText: '#F8FAFC',
+          colorText: '#F8FAFC',
+          colorTextSecondary: '#94A3B8',
           colorDanger: '#EF4444',
-          colorSuccess: '#00D4AA',
+          colorSuccess: '#10B981',
           borderRadius: '0.75rem',
-          fontFamily: "'DM Sans', ui-sans-serif, system-ui, sans-serif",
+          fontFamily: "'Inter', ui-sans-serif, system-ui, sans-serif",
         },
         elements: {
           // Hide social login buttons (Email + Password only for MVP)
@@ -49,15 +49,15 @@ export default function RootLayout({
           dividerLine: { display: 'none' },
           // Card styling
           card: {
-            backgroundColor: 'hsl(240 18% 8% / 0.6)',
+            backgroundColor: 'hsl(222 47% 14% / 0.6)',
             backdropFilter: 'blur(16px)',
-            border: '1px solid hsl(240 14% 15% / 0.5)',
+            border: '1px solid hsl(217 33% 20% / 0.5)',
             boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
           },
           // Footer branding
           footerAction: {
             '& a': {
-              color: '#6C63FF',
+              color: '#2563EB',
             },
           },
         },

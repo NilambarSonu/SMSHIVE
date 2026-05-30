@@ -1,42 +1,42 @@
 /* ── Google Fonts ─────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 @import "tailwindcss";
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   SMSHIVE — Design System
-   "Dark-mode-first enterprise SaaS with electric accents"
+   LectureSnap AI — Design System
+   "Focus, clarity, and seamless integration"
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 /* ── CSS Custom Properties ────────────────── */
 :root {
-  /* Background */
-  --background: 240 20% 4%;       /* #0A0A0F */
-  --foreground: 240 100% 97%;     /* #F0F0FF */
+  /* Dark Mode Palette */
+  --background: 222 47% 11%;      /* #0F172A */
+  --foreground: 210 40% 98%;      /* #F8FAFC */
 
   /* Card / Surface */
-  --card: 240 18% 8%;             /* #111118 */
-  --card-foreground: 240 100% 97%;
+  --card: 222 47% 14%;            /* #1E293B */
+  --card-foreground: 210 40% 98%;
 
   /* Popover */
-  --popover: 240 18% 8%;
-  --popover-foreground: 240 100% 97%;
+  --popover: 222 47% 14%;
+  --popover-foreground: 210 40% 98%;
 
-  /* Primary — Electric Violet */
-  --primary: 244 94% 69%;         /* #6C63FF */
+  /* Primary — Blue */
+  --primary: 221 83% 53%;         /* #2563EB */
   --primary-foreground: 0 0% 100%;
 
-  /* Secondary — Teal Green */
-  --secondary: 163 100% 42%;      /* #00D4AA */
-  --secondary-foreground: 240 20% 4%;
+  /* Secondary — Emerald */
+  --secondary: 160 84% 39%;       /* #10B981 */
+  --secondary-foreground: 0 0% 100%;
 
   /* Muted */
-  --muted: 240 14% 14%;
-  --muted-foreground: 218 11% 46%;  /* #6B7280 */
+  --muted: 217 33% 20%;
+  --muted-foreground: 215 20% 65%;
 
   /* Accent */
-  --accent: 240 14% 14%;
-  --accent-foreground: 240 100% 97%;
+  --accent: 160 84% 39%;          /* #10B981 */
+  --accent-foreground: 0 0% 100%;
 
   /* Destructive — Red */
   --destructive: 0 84% 60%;       /* #EF4444 */
@@ -44,31 +44,31 @@
 
   /* Warning — Amber */
   --warning: 38 92% 50%;          /* #F59E0B */
-  --warning-foreground: 240 20% 4%;
+  --warning-foreground: 222 47% 11%;
 
-  /* Success — Teal */
-  --success: 163 100% 42%;        /* #00D4AA */
-  --success-foreground: 240 20% 4%;
+  /* Success — Emerald */
+  --success: 160 84% 39%;         /* #10B981 */
+  --success-foreground: 222 47% 11%;
 
   /* Border */
-  --border: 240 14% 15%;          /* #1E1E2E */
-  --input: 240 14% 15%;
-  --ring: 244 94% 69%;
+  --border: 217 33% 20%;          /* #334155 */
+  --input: 217 33% 20%;
+  --ring: 221 83% 53%;
 
   /* Sidebar */
-  --sidebar: 240 20% 5%;
-  --sidebar-foreground: 240 100% 97%;
-  --sidebar-border: 240 14% 12%;
-  --sidebar-accent: 240 14% 10%;
-  --sidebar-accent-foreground: 240 100% 97%;
-  --sidebar-ring: 244 94% 69%;
+  --sidebar: 222 47% 11%;
+  --sidebar-foreground: 210 40% 98%;
+  --sidebar-border: 217 33% 20%;
+  --sidebar-accent: 217 33% 20%;
+  --sidebar-accent-foreground: 210 40% 98%;
+  --sidebar-ring: 221 83% 53%;
 
   /* Radius */
   --radius: 0.75rem;
 
   /* Chart colors */
-  --chart-1: 244 94% 69%;
-  --chart-2: 163 100% 42%;
+  --chart-1: 221 83% 53%;
+  --chart-2: 160 84% 39%;
   --chart-3: 38 92% 50%;
   --chart-4: 0 84% 60%;
   --chart-5: 280 80% 60%;
@@ -76,45 +76,46 @@
 
 /* ── Light Mode ───────────────────────────── */
 .light {
-  --background: 0 0% 100%;
-  --foreground: 240 10% 4%;
+  /* Light Mode Palette */
+  --background: 210 40% 98%;      /* #F8FAFC */
+  --foreground: 222 47% 11%;      /* #0F172A */
 
-  --card: 0 0% 98%;
-  --card-foreground: 240 10% 4%;
+  --card: 0 0% 100%;              /* #FFFFFF */
+  --card-foreground: 222 47% 11%;
 
   --popover: 0 0% 100%;
-  --popover-foreground: 240 10% 4%;
+  --popover-foreground: 222 47% 11%;
 
-  --primary: 244 94% 55%;
+  --primary: 221 83% 53%;         /* #2563EB */
   --primary-foreground: 0 0% 100%;
 
-  --secondary: 163 100% 35%;
+  --secondary: 160 84% 39%;       /* #10B981 */
   --secondary-foreground: 0 0% 100%;
 
-  --muted: 240 5% 96%;
-  --muted-foreground: 240 4% 46%;
+  --muted: 210 40% 96%;           /* #F1F5F9 */
+  --muted-foreground: 215 16% 47%;
 
-  --accent: 240 5% 96%;
-  --accent-foreground: 240 10% 4%;
+  --accent: 160 84% 39%;          /* #10B981 */
+  --accent-foreground: 0 0% 100%;
 
-  --destructive: 0 84% 60%;
+  --destructive: 0 84% 60%;       /* #EF4444 */
   --destructive-foreground: 0 0% 100%;
 
   --warning: 38 92% 50%;
   --warning-foreground: 0 0% 100%;
 
-  --success: 163 100% 35%;
+  --success: 160 84% 39%;
   --success-foreground: 0 0% 100%;
 
-  --border: 240 6% 90%;
-  --input: 240 6% 90%;
-  --ring: 244 94% 55%;
+  --border: 214 32% 91%;          /* #E2E8F0 */
+  --input: 214 32% 91%;
+  --ring: 221 83% 53%;
 
-  --sidebar: 240 5% 97%;
-  --sidebar-foreground: 240 10% 4%;
-  --sidebar-border: 240 6% 90%;
-  --sidebar-accent: 240 5% 93%;
-  --sidebar-accent-foreground: 240 10% 4%;
+  --sidebar: 210 40% 98%;
+  --sidebar-foreground: 222 47% 11%;
+  --sidebar-border: 214 32% 91%;
+  --sidebar-accent: 210 40% 96%;
+  --sidebar-accent-foreground: 222 47% 11%;
 }
 
 /* ── Theme Inline ─────────────────────────── */
@@ -157,8 +158,8 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  --font-sans: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
-  --font-display: 'Syne', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Outfit', ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 }
 
