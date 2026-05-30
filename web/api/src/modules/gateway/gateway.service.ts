@@ -40,22 +40,34 @@ export class GatewayService {
     );
 
     // Push to the Bull queue
-    await this.smsQueue.add(
-      {
-        deviceId,
-        phone: sms.recipients.join(','),
-        message: sms.message,
-        smsId: (sms._id as object).toString(),
-      },
-      {
-        removeOnComplete: true,
-        attempts: 3,
-        backoff: {
-          type: 'exponential',
-          delay: 2000,
+    try {
+      await this.smsQueue.add(
+        {
+          deviceId,
+          phone: sms.recipients.join(','),
+          message: sms.message,
+          smsId: (sms._id as object).toString(),
         },
-      }
-    );
+        {
+          removeOnComplete: true,
+          attempts: 3,
+          backoff: {
+            type: 'exponential',
+            delay: 2000,
+          },
+        }
+      );
+    } catch (err: any) {
+      this.logger.warn(`Failed to push SMS to Bull queue (Redis offline/missing): ${err.message}`);
+      // Fallback: Attempt to notify the device directly via WebSocket if connected
+      try {
+        this.gatewayEvents.emitNewSms(deviceId, {
+          id: (sms._id as object).toString(),
+          recipients: sms.recipients,
+          message: sms.message,
+        });
+      } catch (wsErr) {}
+    }
 
     return sms;
   }
@@ -83,22 +95,33 @@ export class GatewayService {
 
     // Queue successful creations
     for (const sms of successful) {
-      await this.smsQueue.add(
-        {
-          deviceId: sms.deviceId,
-          phone: sms.recipients.join(','),
-          message: sms.message,
-          smsId: (sms._id as object).toString(),
-        },
-        {
-          removeOnComplete: true,
-          attempts: 3,
-          backoff: {
-            type: 'exponential',
-            delay: 2000,
+      try {
+        await this.smsQueue.add(
+          {
+            deviceId: sms.deviceId,
+            phone: sms.recipients.join(','),
+            message: sms.message,
+            smsId: (sms._id as object).toString(),
           },
-        }
-      );
+          {
+            removeOnComplete: true,
+            attempts: 3,
+            backoff: {
+              type: 'exponential',
+              delay: 2000,
+            },
+          }
+        );
+      } catch (err: any) {
+        this.logger.warn(`Failed to push SMS to Bull queue (Redis offline/missing): ${err.message}`);
+        try {
+          this.gatewayEvents.emitNewSms(sms.deviceId, {
+            id: (sms._id as object).toString(),
+            recipients: sms.recipients,
+            message: sms.message,
+          });
+        } catch (wsErr) {}
+      }
     }
 
     const failed = results
